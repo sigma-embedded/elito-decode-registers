@@ -1,0 +1,52 @@
+#! /usr/bin/python3
+
+import os
+import glob
+import fileinput
+
+from unit import Unit
+from line import Line
+
+
+def run(defines=[], directory=None):
+    units = []
+    unit_files = glob.glob(os.path.join(directory, "*.unit"))
+    unit = None
+    l    = None
+
+    with fileinput.FileInput(files = unit_files) as input:
+        for txt in input:
+            l = Line.parse(txt, l)
+            if l.is_complete():
+                info     = l.expand(defines)
+                #print(info)
+                new_unit = Unit.parse(info[2], unit, info[0])
+                l        = None
+                if new_unit != unit:
+                    if new_unit.is_valid():
+                        units.append(new_unit)
+                    unit = new_unit
+
+    assert(not l)
+
+    if units and not units[-1].is_complete():
+        units[-1].finish()
+
+    for u in units:
+        u.read_registers(directory, defines)
+
+    print(units)
+
+if __name__ == '__main__':
+    import argparse
+    
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--define', '-D', metavar='<symbol>',
+                        action='append', help='define a symbol',
+                        dest='defines')
+    parser.add_argument('directory')
+    
+    args = parser.parse_args(['-Dmx6q', '-Dmx6d', 'mx6'])
+    run(**(args.__dict__))
