@@ -1,0 +1,5 @@
+/test-deserialize
+/test-deserialize_fill.c
+/test-deserialize_stream.bin
+/test-deserialize_stream.h
+/test-deserialize_symbols.h

@@ -1,0 +1,15 @@
+@register SW_MUX_CTL_PAD_GPIO09
+  @use SW_MUX_CTL_PAD
+  @addr[imx6sdl] 0
+  @addr[imx6qd]  0x228
+  @field MUX_MODE
+    @enum 0 ESAI_RX_FS
+      @seealso IOMUXC IOMUXC_ESAI_RX_FS_SELECT_INPUT
+    @enum 1 WDOG1_B
+    @enum 2 KEY_COL6
+      @seealso IOMUXC IOMUXC_KEY_COL6_SELECT_INPUT
+    @enum 3 CCM_REF_EN_B
+    @enum 4 PWM1_OUT
+    @enum 5 GPIO1_IO09
+    @enum 6 -
+    @enum 7 SD1_WP

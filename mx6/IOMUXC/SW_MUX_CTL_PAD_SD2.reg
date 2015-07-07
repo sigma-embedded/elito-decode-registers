@@ -1,0 +1,23 @@
+@register SW_MUX_CTL_PAD_SD2_DATA1
+  @use SW_MUX_CTL_PAD
+  @addr[imx6qd] 0x004c
+  @field MUX_MODE
+    @enum 0
+      @name SD2_DATA1
+    @enum 1
+      @name ECSPI5_SS0
+      @seealso IOMUXC ECSPI5_SS0_SELECT_INPUT
+    @enum 2
+      @name EIM_CS2_B
+    @enum 3
+      @name AUD4_TXFS
+      @seealso IOMUXC AUD4_INPUT_TXFS_AMX_SELECT_INPUT
+    @enum 4
+      @name KEY_COL7
+      @seealso IOMUXC KEY_COL7_SELECT_INPUT
+    @enum 5
+      @name GPIO5_IO14
+    @enum 6
+      @remove
+    @enum 7
+      @remove

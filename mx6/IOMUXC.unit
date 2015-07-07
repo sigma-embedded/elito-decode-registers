@@ -1,0 +1,4 @@
+@unit IOMUXC
+  @name "IOMUX Controller"
+  @registers IOMUXC/
+  @reg 0x20e0000 0x1000

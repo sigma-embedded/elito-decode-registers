@@ -1,0 +1,12 @@
+@unit _MMDC
+  @disabled
+  @name "MMDC"
+  @registers MMDC/
+
+@unit MMDC1
+  @use _MMDC
+  @reg 0x021b0000 0x4000
+
+@unit MMDC2
+  @use _MMDC
+  @reg 0x021b4000 0x4000

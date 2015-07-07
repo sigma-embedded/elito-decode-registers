@@ -17,95 +17,193 @@
 import os
 import glob
 import fileinput
+import functools
 
-from line import Line
+import block
+import generator
 
-class Unit:
-    def __init__(self, name, is_valid):
-        self.__is_complete = False
+class Top(block.Top):
+    class __Parser(block.Parser):
+        def __init__(self, obj):
+            super().__init__(obj)
+
+        def _validate(self, l):
+            ARG_RANGES = {
+                '@unit' : 1,
+            }
+
+            return self._validate_ranges(l, ARG_RANGES)
+
+        def _parse(self, l, enabled):
+            tag = l[0]
+            res = None
+
+            if tag == '@unit':
+                res = Unit(self.o, l[1], enabled)
+                self.o.add_child(res)
+            else:
+                assert(False)
+
+            return res
+
+    def __init__(self):
+        block.Top.__init__(self)
+        self.add_parser(Top.__Parser(self))
+
+    def get_units(self):
+        return self.filter(lambda f: isinstance(f, Unit))
+
+class Unit(block.Block, block.Mergeable):
+    class __Parser(block.Parser):
+        def __init__(self, obj):
+            super().__init__(obj)
+
+        def _validate(self, l):
+            ARG_RANGES = {
+                '@registers' : 1,
+                '@disabled' : 0,
+                '@name' : 1,
+                '@reg' : 2,
+            }
+
+            return self._validate_ranges(l, ARG_RANGES)
+
+        def _parse(self, l, enabled):
+            tag = l[0]
+            res = self.o
+
+            if not enabled:
+                pass                # ignore disabled directives
+            elif tag == '@registers':
+                tmp = l[1]
+                if tmp.endswith('/'):
+                    tmp += '*.reg'
+                self.o._assign_regglobs(tmp)
+            elif tag == '@disabled':
+                self.o._assign_enabled(False)
+            elif tag == '@name':
+                self.o._assign_name(l[1])
+            elif tag == '@reg':
+                self.o._assign_memory(int(l[1], 0), int(l[2], 0))
+            else:
+                assert(False)
+
+            return res
+
+    def __init__(self, top, name, is_valid):
+        assert(isinstance(top, Top))
+
+        block.Block.__init__(self, top, is_valid)
+        block.Mergeable.__init__(self)
+
+        self.add_parser(Unit.__Parser(self))
+
         self.__id = name
-        self.__name = name
-        self.__is_valid = is_valid
 
+        self.__regglobs = []
+
+        self.__registers = None
+
+        self.__name = None
         self.__directory = None
         self.__is_enabled = True
         self.__memory = None
-        self.__regdirs = []
 
-    def is_complete(self):
-        return self.__is_complete
+    @staticmethod
+    def cmp_by_addr(self, b):
+        return self.__memory[0] - b.__memory[0]
 
-    def finish(self):
-        print("finish: %s" % (self.__name))
-        self.__is_complete = True
+    def _assign_regglobs(self, regs):
+        self.__regglobs.append(regs)
 
-    def is_valid(self):
-        return self.__is_valid
+    def _assign_enabled(self, ena):
+        self.__is_enabled = ena
+
+    def _assign_name(self, name):
+        self.__name = name
+
+    def _assign_memory(self, addr, len):
+        self.__memory = [addr, len]
+
+    def get_id(self):
+        return self.__id
+
+    def get_name(self):
+        if not self.__name:
+            return self.__id
+        else:
+            return self.__name
+
+    def is_enabled(self):
+        return self.__is_enabled
 
     def read_registers(self, directory, defines):
+        import register
+
         regs = []
         reg_files = []
-        for d in self.__regdirs:
+        for d in self.__regglobs:
             p = os.path.join(directory, d)
-            assert(os.path.isdir(p))
-            reg_files.extend(glob.glob(os.path.join(p, "*.reg")))
+            assert(os.path.isdir(os.path.dirname(p)))
+            reg_files.extend(glob.glob(p))
 
         # TODO: warn about empty reg_files
-        if not reg_files:
-            return
 
-        l = None
-        with fileinput.FileInput(files = reg_files) as input:
-            for txt in input:
-                l = Line.parse(txt, l)
-                if l.is_complete():
-                    info = l.expand(defines)
-                    print(info)
-                    l    = None
+        #print(reg_files)
+        top = register.Top(self)
+
+        top.iterate_files(reg_files, defines)
+
+        regs = block.Mergeable.create_container(top.get_registers(),
+                                                lambda x: x.get_id(False))
+
+        for r in regs.values():
+            r.merge(regs)
+
+        self.__registers = regs
+
+    def _merge_pre(self):
+        assert(self.__registers != None)
 
         pass
-        
-    @staticmethod
-    def parse(l, prev_unit, enabled):
-        if not l:
-            return prev_unit
 
-        tag = l[0]
-    
-        if not tag.startswith('@'):
-            raise Exception("Invalid line '%s'" % (l))
+    def _merge(self, base):
+        assert(isinstance(base, Unit))
+        #print("Unit: merging %s into %s" % (base.get_id(), self.get_id()))
 
-        if tag == '@unit':
-            if prev_unit:
-                prev_unit.finish()
-                prev_unit = None
+        for r in base.__registers.values():
+            id = r.get_id(False)
+            if id in self.__registers:
+                self.__registers[id].update(r)
+            else:
+                self.__registers[id] = r.clone(self)
 
-            assert(len(l) == 2)            
-            unit = Unit(l[1], enabled)
-        else:
-            assert(prev_unit)
-            unit = prev_unit
+            #print("  ", id, self.__registers[id])
 
-        #print(l)
-        if tag == '@unit':
-            pass                # handled above
-        elif not enabled:
-            pass                # ignore disabled directives
-        elif tag == '@directory':
-            assert(len(l) == 2)
-            unit.__regdirs.append(l[1])
-        elif tag == '@disabled':
-            assert(len(l) == 1)
-            unit.__is_enabled = False
-        elif tag == '@name':
-            assert(len(l) == 2)
-            unit.__name = l[1]
-        elif tag == '@reg':
-            assert(len(l) == 3)
-            unit.__memory = [int(l[1], 0), int(l[2], 0)]
-        else:
-            print("WARNING: unsupported '%s' line" % (l,))
-            
-        return unit
+        #print(self, base)
+        pass
 
-        
+    def generate_code(self, top):
+        if not self.__is_enabled:
+            return None
+
+        code = top.create_block('%s unit' % self.__id)
+
+        code.add_u32(self.__memory[0], "memory start address", "0x%08x")
+        code.add_u32(self.__memory[0] + self.__memory[1] - 1,
+                     "memory end address", "0x%08x")
+        code.add_string(self.get_id(),   "Unit id")
+        code.add_string(self.get_name(), "Unit name")
+
+        regs = list(filter(lambda x: not x.is_template(),
+                           self.__registers.values()))
+
+        regs.sort(key = functools.cmp_to_key(lambda a, b: a.cmp_by_addr(a, b)))
+
+        code.add_u32(len(regs), "number of registers")
+        block0 = code.create_block("registers")
+
+        for r in regs:
+            r.generate_code(block0)
+
+        return code

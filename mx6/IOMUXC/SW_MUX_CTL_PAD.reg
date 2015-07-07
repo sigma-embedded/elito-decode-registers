@@ -1,0 +1,27 @@
+@register SW_MUX_CTL_PAD
+  @template
+
+  @field SION
+    @bits 4
+    @boolean
+    @description "Software Input On Field"
+
+  @field MUX_MODE
+    @bits 2-0
+    @description "MUX Mode Select Field"
+    @enum 0
+      @name ALT0
+    @enum 1
+      @name ALT1
+    @enum 2
+      @name ALT2
+    @enum 3
+      @name ALT3
+    @enum 4
+      @name ALT4
+    @enum 5
+      @name ALT5
+    @enum 6
+      @name ALT6
+    @enum 7
+      @name ALT7

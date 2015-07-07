@@ -1,0 +1,37 @@
+@unit[mx6q] Test
+
+  @disabled
+  @name[0]    multi-whitespace
+  # next line contains whitespace at end
+  @name[0] no-whitespace         
+  @name[0] yes-whitespace\ 
+  @name[0] 'singled quoted'
+  @name[1] "double quoted"
+  @name[4] 'single\'"quoted'
+  @name[5] "double\"'quoted"
+  @name[2] 'single\
+ quoted'
+  @name[3] "double\
+ quoted"
+  @reg[0] 0x1 0x2
+  
+  @reg[mx6q] 0x10 \
+          0x20
+
+  # comment
+  @name[0]  foo		# inline comment
+  @reg[0]  0x11		# inline comment with continuation line \
+  	   0x12
+
+@unit[8086] "A20 gate"
+
+@unit "Unit with whitespace"
+  @reg  0x1000 44
+
+@unit "IC"
+  @name "Interrupt controller"
+  @reg  0x2000 0x100
+  @registers IC/
+
+@unit[0] Test
+  @reg  1 44

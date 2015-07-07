@@ -1,0 +1,29 @@
+@register SW_MUX_CTL_PAD_CSI0_DATA04
+  @use SW_MUX_CTL_PAD
+  @addr[imx6sdl] 0
+  @addr[imx6qd]  0x0268
+  @field MUX_MODE
+    @enum 0 IPU1_CSI0_DATA04
+    @enum 1 EIM_DATA02
+    @enum 2 ECSPI1_SCLK
+      @seealso IOMUXC ECSPI2_CSPI_CLK_IN_SELECT_INPUT
+    @enum 3 KEY_COL5
+    @enum 4 AUD3_TXC
+    @enum 5 GPIO5_IO22
+    @enum 6 -
+    @enum 7 ARM_TRACE01
+
+@register SW_MUX_CTL_PAD_CSI0_DATA10
+  @use SW_MUX_CTL_PAD
+  @addr[imx6sdl] 0x004c
+  @addr[imx6qd]  0x0280
+  @field MUX_MODE
+    @enum 0 IPU1_CSI0_DATA10
+    @enum 1 AUD3_RXC    
+    @enum 2 AUD3_ECSPI2_MISO
+      @seealso IOMUXC ECSPI2_MISO_SELECT_INPUT
+    @enum 3 UART1_TX_DATA
+    @enum 4 -
+    @enum 5 GPIO5_IO28
+    @enum 6 -
+    @enum 7 ARM_TRACE07

@@ -1,0 +1,37 @@
+@register BASE
+  @template
+
+  @field ENABLE
+    @bits 12
+    @boolean
+    @description "IRQ enable"
+
+#  @field FREQUENCY
+#    @bits 2 28 20-16
+#    @int
+#    @description "Poll frequency"
+
+  @field TYPE
+    @bits 10-9 16
+    @enum 0 "rising edge"
+    @enum 2 "falling edge"
+    @enum 1 "high level"
+    @enum 3 "low level"
+    
+@register IRQ1
+  @use BASE  
+  @addr 4
+
+@register IRQ2
+  @use BASE  
+  @addr 8
+
+  @field PRIO
+    @boolean 11
+
+@register STATUS0
+  @addr 12
+
+  @field LONG_ENUM
+    @bits 20-0
+    @enum 0 reserved

@@ -1,0 +1,18 @@
+@register CSI0_SENS_CONF
+  @addr 0x30000
+
+  @field VSYNC_POL
+    @boolean
+    @bits 0
+
+  @field HSYNC_POL
+    @boolean
+    @bits 1
+
+  @field DATA_POL
+    @boolean
+    @bits 2
+
+@register CSI1_SENS_CONF
+  @use CSI0_SENS_CONF
+  @addr 0x38000

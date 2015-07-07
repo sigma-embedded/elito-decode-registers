@@ -1,0 +1,7 @@
+@register SW_MUX_CTL_PAD_SD4_DATA3
+  @use SW_MUX_CTL_PAD
+  @addr[imx6sdl] 0
+  @addr[imx6qd]  0x328
+  @field MUX_MODE
+    @enum 1 SD4_DATA3
+    @enum 5 GPIO2_IO11

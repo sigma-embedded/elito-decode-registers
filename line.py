@@ -26,13 +26,16 @@ class Line:
                 self.i = (self.i + 8) / 8 * 8
             else:
                 raise Exception("Bad char for indentation")
-    
+
     def __init__(self):
         self.__is_complete = False
         self.__exp_quote = None
         self.__level = None
         self.tokens = []
         pass
+
+    def __str__(self):
+        return ' '.join(self.tokens)
 
     def get_expected_quote(self):
         return self.__exp_quote
@@ -56,7 +59,7 @@ class Line:
 
     def expand(self, defines):
         assert(self.is_complete())
-        
+
         if not self.tokens:
             return (False, -1, None)
 
@@ -64,7 +67,7 @@ class Line:
         f   = res[0]
         idx = f.find('[')
         valid = idx < 0
-    
+
         if idx < 0:
             valid = True
         else:
@@ -76,7 +79,10 @@ class Line:
                 raise Exception("Invalid condition in '%s'" % (self.tokens,))
 
             f = f[:idx]
-            valid = f in defines
+            if f[0] == '!':
+                valid = f not in defines
+            else:
+                valid = f in defines
 
         return (valid, self.__level, res)
 
@@ -89,7 +95,7 @@ class Line:
         end_quote = None
 
         l = l.rstrip('\n\r')
-        
+
         #print("== >%s<" % l)
         l = list(l)
         if not l:

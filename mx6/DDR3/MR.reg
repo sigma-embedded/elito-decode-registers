@@ -1,0 +1,125 @@
+@register MR0
+  @addr 0 16
+  @field PD
+    @bits 12
+    @enum 0 "DLL off"
+    @enum 1 "DLL on"
+
+  @field WR
+    @bits 11-9
+    @enum 0 "16"
+    @enum 1 "5"
+    @enum 2 "6"
+    @enum 3 "7"
+    @enum 4 "8"
+    @enum 5 "10"
+    @enum 6 "12"
+    @enum 7 "14"
+
+  @field DLL
+    @bits 8
+    @boolean
+
+  @field CAS
+    @bits 6-4,2
+    @enum  2 "5"
+    @enum  4 "6"
+    @enum  6 "7"
+    @enum  8 "8"
+    @enum 10 "9"
+    @enum 12 "10"
+    @enum 14 "11"
+    @enum  1 "12"
+    @enum  3 "13"
+    @enum  5 "14"
+
+  @field BT
+    @bits 3
+    @enum 0 "seq"
+    @enum 1 "interleaved"
+
+  @field BL
+    @bits 1-0
+    @enum 0 "fixed"
+    @enum 1 "4/8"
+    @enum 2 "bc4"
+
+
+@register MR1
+  @addr 4
+
+  @field QOFF
+    @bits 12
+    @boolean
+
+  @field TDQS
+    @bits 11
+    @boolean
+
+  @field RTT
+    @bits 9,6,2
+    @enum 0 "disabled"
+    @enum 1 "RZQ/4  60 Ohm"
+    @enum 2 "RZQ/2 120 Ohm"
+    @enum 3 "RZQ/6  40 Ohm"
+    @enum 4 "RZQ/12 20 Ohm"
+    @enum 5 "RZQ/8  30 Ohm"
+
+  @field WL
+    @bits 7
+    @boolean
+
+  @field AL
+    @bits 4,3
+    @enum 0 "disabled"
+    @enum 1 "CL-1"
+    @enum 2 "CL-2"
+
+  @field ODS
+    @bits 5,1
+    @enum 0 "RZQ/6 40 Ohm"
+    @enum 1 "RZQ/7 34 Ohm"
+
+
+  @field DLL
+    @bits 0
+    @boolean
+
+
+@register MR2
+  @addr 8 16
+
+  @field RTT
+    @bits 10,9
+    @enum 0 "disabled"
+    @enum 1 "RZQ/4  60 Ohm"
+    @enum 2 "RZQ/2  60 Ohm"
+
+  @field SRT
+    @bits 7
+    @enum 0 "normal"
+    @enum 1 "extended"
+
+  @field ASR
+    @bits 6
+    @boolean
+
+  @field CWL
+    @bits 5,4,3
+    @enum 0 "5 CK"
+    @enum 1 "6 CK"
+    @enum 2 "7 CK"
+    @enum 3 "8 CK"
+    @enum 4 "9 CK"
+    @enum 5 "10 CK"
+
+@register MR3
+  @addr 12 16
+
+  @field MPR
+    @bits 2
+    @boolean
+
+  @field MPR_RF
+    @bits 1-0
+    @enum 0 "predef"

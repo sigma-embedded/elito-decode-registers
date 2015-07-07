@@ -1,0 +1,2 @@
+@register CONF
+  @addr 0x0000

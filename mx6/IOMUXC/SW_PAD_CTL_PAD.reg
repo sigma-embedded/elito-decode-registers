@@ -1,0 +1,51 @@
+@register _SW_PAD_PUS
+  @template
+  @field PUS
+    @bits 15-14
+    @enum 0 "100k pd"
+    @enum 1 "47k pu"
+    @enum 2 "100k pu"
+    @enum 3 "22k pu"
+
+ @field PKE
+    @boolean
+    @bits 12
+
+ @field PUE
+    @boolean
+    @bits 13
+
+@register _SW_PAD_HYS
+  @field HYS
+    @bits 16
+    @boolean
+
+@register SW_PAD_CTL_PAD
+  @template
+  @use _SW_PAD_PUS
+  @field SRE
+    @bits 0
+    @enum 0 SLOW
+    @enum 1 FAST
+
+  @field DSE
+    @bits 5-3
+    @enum 0 Hi-Z
+    @enum 1 "260 Ohm"
+    @enum 2 "130 Ohm"
+    @enum 3 "90 Ohm"
+    @enum 4 "60 Ohm"
+    @enum 5 "50 Ohm"
+    @enum 6 "40 Ohm"
+    @enum 7 "33 Ohm"
+
+ @field SPEED
+    @bits 7-6
+    @enum 0 SLOW
+    @enum 1 MEDIUM
+    @enum 2 MEDIUM
+    @enum 3 FAST
+
+ @field ODE
+    @boolean
+    @bits 11

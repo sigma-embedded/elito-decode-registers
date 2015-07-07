@@ -1,0 +1,58 @@
+@register MPZQHWCTRL
+  @addr 0x800
+  @field ZQ_MODE
+    @bits 1-0
+    @enum 0 "no ZQ calib"
+    @enum 1 "ZQ self refresh"
+    @enum 2 "ZQ periodically"
+    @enum 3 "ZQ sr + per"
+
+  @field ZQ_HW_PER
+    @bits 5-2
+    @enum  0 "1ms"
+    @enum  1 "2ms"
+    @enum  2 "4ms"
+    @enum 10 "1ms"
+    @enum 14 "16ms"
+    @enum 15 "32ms"
+
+  @field ZQ_HW_PU_RES
+    @bits 10-6
+    #integer
+    @enum 0 0
+
+  @field ZQ_HW_PD_RES
+    @bits 15-11
+    #integer
+    @enum 0 0
+
+  @field ZQ_HW_FOR
+    @boolean 16
+
+  @field TZQ_INIT
+    @bits 19-17
+    @enum 2  "128cyc"
+    @enum 3  "256cyc"
+    @enum 4  "512cyc"
+    @enum 5 "1024cyc"
+
+  @field TZQ_OPER
+    @bits 22-20
+    @enum 2  "128cyc"
+    @enum 3  "256cyc"
+    @enum 4  "512cyc"
+    @enum 5 "1024cyc"
+    
+  @field TZQ_CS
+    @bits 25-23
+    @enum 2  "128cyc"
+    @enum 3  "256cyc"
+    @enum 4  "512cyc"
+    @enum 5 "1024cyc"
+    
+  @field ZQ_EARLY_COMPARATOR_EN_TIMER
+    @bits 31-27
+    @enum 0x7  "8cyc"
+    @enum 0x14 "21cyc"
+    @enum 0x1e "31cyc"
+    @enum 0x1f "32cyc"

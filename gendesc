@@ -1,52 +1,104 @@
 #! /usr/bin/python3
 
 import os
+import io
 import glob
 import fileinput
+import functools
 
-from unit import Unit
-from line import Line
+import generator
+import generator_cfill
+import generator_cdef
+import generator_stream
+
+def run(opt_defines=[], opt_directory=None, opt_c_fill=None,
+        opt_c_defines=None, opt_datastream=None,
+        opt_endianess='little'):
+    import block
+    import unit
+
+    unit_files = glob.glob(os.path.join(opt_directory, "*.unit"))
+    top  = unit.Top()
+
+    top.iterate_files(unit_files, opt_defines)
+
+    units = block.Mergeable.create_container(top.get_units(),
+                                             lambda x: x.get_id())
+
+    for u in units.values():
+        u.read_registers(opt_directory, opt_defines)
+
+    for u in units.values():
+        u.merge(units)
+
+    units = list(filter(lambda x: x.is_enabled(), units.values()))
+    units.sort(key = functools.cmp_to_key(lambda a, b: a.cmp_by_addr(a, b)))
 
 
-def run(defines=[], directory=None):
-    units = []
-    unit_files = glob.glob(os.path.join(directory, "*.unit"))
-    unit = None
-    l    = None
+    generators = []
 
-    with fileinput.FileInput(files = unit_files) as input:
-        for txt in input:
-            l = Line.parse(txt, l)
-            if l.is_complete():
-                info     = l.expand(defines)
-                #print(info)
-                new_unit = Unit.parse(info[2], unit, info[0])
-                l        = None
-                if new_unit != unit:
-                    if new_unit.is_valid():
-                        units.append(new_unit)
-                    unit = new_unit
+    if opt_c_defines:
+        f = generator_cdef.CodeFactory()
+        generators.append([opt_c_defines, generator.CodeGenerator(f)])
 
-    assert(not l)
+    if opt_c_fill:
+        f = generator_cfill.CodeFactory()
+        generators.append([opt_c_fill, generator.CodeGenerator(f)])
 
-    if units and not units[-1].is_complete():
-        units[-1].finish()
+    if opt_datastream:
+        f = generator_stream.CodeFactory(
+            { 'little' : generator_stream.LITTLE_ENDIAN,
+              'big'    : generator_stream.BIG_ENDIAN }[opt_endianess])
 
+        if isinstance(opt_datastream, io.TextIOBase):
+            # when '-' is used, argparse will return sys.stdout;
+            # convert it into a raw stream in this case
+            s = open(opt_datastream.fileno(), "wb", closefd = False)
+        else:
+            s = opt_datastream
+
+        generators.append([s, generator.CodeGenerator(f)])
+
+    for g in generators:
+        g[1].add_u32(len(units), "number of units")
+        
     for u in units:
-        u.read_registers(directory, defines)
+        for g in generators:
+            u.generate_code(g[1])
 
-    print(units)
+    for g in generators:
+        res = g[1].emit()
+        f   = g[0]
+
+        if res:
+            g[0].write(res)
 
 if __name__ == '__main__':
     import argparse
-    
+
 
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--define', '-D', metavar='<symbol>',
                         action='append', help='define a symbol',
-                        dest='defines')
-    parser.add_argument('directory')
-    
-    args = parser.parse_args(['-Dmx6q', '-Dmx6d', 'mx6'])
+                        dest='opt_defines', default = [])
+    parser.add_argument('--c-fill', metavar='<file>',
+                        type = argparse.FileType('w'),
+                        help='output C code',
+                        dest='opt_c_fill', default = None)
+    parser.add_argument('--c-defines', metavar='<file>',
+                        type = argparse.FileType('w'),
+                        help='output C symbols',
+                        dest='opt_c_defines', default = None)
+    parser.add_argument('--datastream', metavar='<file>',
+                        type = argparse.FileType('bw', encoding = None),
+                        help='output raw datastream',
+                        dest='opt_datastream', default = None)
+    parser.add_argument('--endian', metavar='big|little',
+                        help='endianess of raw datastream',
+                        choices = ['little', 'big'],
+                        dest='opt_endianess', default = 'little')
+    parser.add_argument('opt_directory')
+
+    args = parser.parse_args()
     run(**(args.__dict__))
