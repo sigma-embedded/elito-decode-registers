@@ -16,6 +16,13 @@
   @field ODT
     @bits 10-8
     @enum 0 "DISABLED"
+    @enum 1 "120 Ohm"
+    @enum 2 "60 Ohm"
+    @enum 3 "40 Ohm"
+    @enum 4 "30 Ohm"
+    @enum 5 "24 Ohm"
+    @enum 6 "20 Ohm"
+    @enum 7 "17 Ohm"
 
 @register _SW_PAD_DDR_INPUT
   @template
@@ -23,32 +30,6 @@
     @bits 17
     @enum 0 CMOS
     @enum 1 differential
-
-@register SW_PAD_CTL_GRP_DDRMODE_CTL
-  @use _SW_PAD_DDR_INPUT
-  @addr[imx6qd] 0x0750
-  @addr[imx6sd3] 0
-
-@register SW_PAD_CTL_GRP_DDRMODE
-  @use _SW_PAD_DDR_INPUT
-  @addr[imx6qd] 0x0774
-  @addr[imx6sd3] 0
-
-@register SW_PAD_CTL_GRP_DDR_TYPE
-  @addr[imx6qd]  0x0798
-  @addr[imx6sdl] 0x0774
-  @field DDR_SEL
-    @bits 19-18
-    @enum 2 LPDDR2
-    @enum 3 DDR3
-
-@register SW_PAD_CTL_GRP_DDR_TYPE_RGMII
-  @addr[imx6qd]  0x0790
-  @addr[imx6sdl] 0x0774
-  @field DDR_SEL
-    @bits 19-18
-    @enum 2 1P2V_IO
-    @enum 3 1P5V_IO
 
 #### SDQS
 
@@ -155,6 +136,43 @@
   @addr[imx6qd] 0x05a0
   @addr[imx6sdl] 0
 
+#### SDBAx
+
+@register SW_PAD_CTL_PAD_DRAM_SDBA0
+  @use _SW_PAD_DDR_INPUT
+  @use _SW_PAD_HYS
+  @use _SW_PAD_DDR_ODT
+  @addr[imx6qd]  0x580
+  @addr[imx6sdl] 0x498
+
+@register SW_PAD_CTL_PAD_DRAM_SDBA1
+  @use SW_PAD_CTL_PAD_DRAM_SDBA0
+  @addr[imx6qd]  0x584
+  @addr[imx6sdl] 0x49c
+
+@register SW_PAD_CTL_PAD_DRAM_SDBA2
+  @use SW_PAD_CTL_PAD_DRAM_SDBA0
+  @addr[imx6qd] 0x58c
+  @addr[imx6sdl] 0x4a0
+
+  @use[imx6sdl] _SW_PAD_PUS
+  @field[imx6sdl] PUS
+    @reserved
+
+#### SDCKEx
+
+@register SW_PAD_CTL_PAD_DRAM_SDCKE0
+  @use _SW_PAD_DDR_INPUT
+  @use _SW_PAD_HYS
+  @use _SW_PAD_DDR_ODT
+  @addr[imx6qd]  0x590
+  @addr[imx6sdl] 0x4a4
+
+@register SW_PAD_CTL_PAD_DRAM_SDCKE1
+  @use SW_PAD_CTL_PAD_DRAM_SDCKE0
+  @addr[imx6qd]  0x598
+  @addr[imx6sdl] 0x4a8
+
 ### xAS_B
 @register _SW_PAD_CTL_PAD_DRAM_xAS_B
   @template
@@ -225,11 +243,13 @@
 
 #### GRP_BxDS
 @register SW_PAD_CTL_GRP_B0DS
+  #affects DRAM_DATA{00..07}
   @use _SW_PAD_DDR_DSE
   @addr[imx6qd]  0x784
   @addr[imx6sdl] 0x764
 
 @register SW_PAD_CTL_GRP_B1DS
+  #affects DRAM_DATA{08..15}
   @use SW_PAD_CTL_GRP_B0DS
   @addr[imx6qd]  0x788
   @addr[imx6sdl] 0x770
@@ -265,6 +285,7 @@
   @addr[imx6sdl] 0x748
 
 @register SW_PAD_CTL_GRP_ADDDS
+  #affects DRAM_ADDR{00..15}, DRAM_SDBA[0..1]
   @use SW_PAD_CTL_GRP_B0DS
   @addr[imx6qd]  0x74c
   @addr[imx6sdl] 0x74c
@@ -274,11 +295,50 @@
   @addr[imx6qd]  0x78c
   @addr[imx6sdl] 0x76c
 
-#### GRP_DDRPKE
-
 @register SW_PAD_CTL_GRP_DDRPKE
+  #affects DRAM_ADDR{00..15}, DRAM_CAS_B, ...
   @addr[imx6qd]  0x758
   @addr[imx6sdl] 0x754
   @field PKE
-    @bits 12
-    @boolean
+    @boolean 12
+
+@register SW_PAD_CTL_GRP_DDRPK
+  #affects DRAM_ADDR{00..15}, DRAM_CAS_B, ...
+  @addr[imx6qd]  0x768
+  @addr[imx6sdl] 0x758
+  @field PUE
+    @boolean 13
+
+@register SW_PAD_CTL_GRP_DDRHYS
+  #affects DRAM_DATA[0..63], DRAM_SDQS[0..7]_P
+  @addr[imx6qd]  0x770
+  @addr[imx6sdl] 0x75c
+  @use _SW_PAD_HYS
+
+@register SW_PAD_CTL_GRP_DDRMODE
+  @use _SW_PAD_DDR_INPUT
+  #affects DRAM_DATA{00-63}
+  @addr[imx6qd]  0x774
+  @addr[imx6sdl] 0x760
+
+@register SW_PAD_CTL_GRP_DDRMODE_CTL
+  @use _SW_PAD_DDR_INPUT
+  #affects DRAM_SDQS{0..7}_P
+  @addr[imx6qd]  0x750
+  @addr[imx6sdl] 0x750
+
+@register SW_PAD_CTL_GRP_DDR_TYPE
+  @addr[imx6qd]  0x0798
+  @addr[imx6sdl] 0x0774
+  @field DDR_SEL
+    @bits 19-18
+    @enum 2 LPDDR2
+    @enum 3 DDR3
+
+@register SW_PAD_CTL_GRP_DDR_TYPE_RGMII
+  @addr[imx6qd]  0x0790
+  @addr[imx6sdl] 0x0774
+  @field DDR_SEL
+    @bits 19-18
+    @enum 2 1P2V_IO
+    @enum 3 1P5V_IO

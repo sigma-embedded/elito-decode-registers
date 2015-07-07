@@ -1,0 +1,65 @@
+@register GPR0
+  @addr 0x0000
+  @field DMAREQ_MUX_SEL0
+    @bits 0
+    @enum 0 "ipu1"
+    @enum 1 "hdmi_tx"
+
+  @field DMAREQ_MUX_SEL1
+    @bits 0
+    @enum 0 "ecspi1"
+    @enum 1 "i2c3"
+
+  #TODO: complete me!
+
+@register GPR4
+  @addr 0x0010
+
+  @field IPU_RD_CACHE_CTL
+    @boolean 0
+
+  @field IPU_WR_CACHE_CTL
+    @boolean 1
+
+  @field VPU_P_RD_CACHE_VAL
+    @boolean 2
+
+  @field VPU_P_WR_CACHE_VAL
+    @boolean 3
+
+  @field[imx6sdl] VPU_S_RD_CACHE_VAL
+    @boolean 4
+
+  @field[imx6sdl] VPU_S_WR_CACHE_VAL
+    @boolean 5
+
+  @field VPU_RD_CACHE_CTL
+    @boolean 6
+
+  @field VPU_WR_CACHE_CTL
+    @boolean 7
+
+  @field SOC_VERSION
+    @bits 15-8
+    #integer
+    @enum 0 0
+
+
+  #TODO: complete me!
+
+@register GPR5
+  @addr 0x14
+  #readonly
+
+  @field ARM_WFI
+    @bits 3-0
+    #integer/bitmask
+    @enum 0 0
+
+  @field ARM_WFE
+    @bits 7-4
+    #integer/bitmask
+    @enum 0 0
+
+  @field L2_CLK_STOP
+    @boolean 8
