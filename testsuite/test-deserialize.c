@@ -32,6 +32,7 @@ static uint8_t const	STREAM[] = {
 #define STR_ARG(_s)	(int)((_s)->len), (_s)->data
 
 
+static size_t g_buf_len = 1024;
 
 struct {
 	void		*base;
@@ -41,8 +42,13 @@ struct {
 
 struct dump_data {
 	bool		do_introspect;
+	bool		is_terse;
 	char		*buf;
 	size_t		buf_len;
+
+	struct cpu_register const	*reg;
+	char				*ptr;
+	char const			*delim;
 };
 
 void *deserialize_alloc(size_t len)
@@ -69,6 +75,24 @@ static char *_deserialize_dump_bool(bool v, char *buf, size_t len)
 	return strcpy(buf, v ? "true" : "false");
 }
 
+static void _deserialize_dump_bool_terse(struct cpu_regfield_bool const *fld,
+					 bool v, struct dump_data *priv)
+{
+	int			rc;
+
+	priv->reg = fld->reg.reg;
+
+	if (1) {
+		rc = sprintf(priv->ptr, "%s%s" STR_FMT,
+			     priv->delim,
+			     v ? "" : "!",
+			     STR_ARG(&fld->reg.name));
+
+		priv->ptr += rc;
+		priv->delim = ", ";
+	}
+}
+
 static char *deserialize_introspect_bool(struct cpu_regfield_bool const *fld,
 					 char *buf, size_t len)
 {
@@ -88,8 +112,10 @@ void deserialize_dump_bool(struct cpu_regfield_bool const *fld,
 
 	if (priv->do_introspect)
 		deserialize_introspect_bool(fld, priv->buf, priv->buf_len);
-	else
+	else if (!priv->is_terse)
 		_deserialize_dump_bool(v, priv->buf, priv->buf_len);
+	else
+		_deserialize_dump_bool_terse(fld, v, priv);
 }
 
 static char *deserialize_introspect_enum(struct cpu_regfield_enum const *fld,
@@ -138,6 +164,33 @@ static char *_deserialize_dump_enum(struct cpu_regfield_enum_val const *val,
 	return buf;
 }
 
+static void _deserialize_dump_enum_terse(struct cpu_regfield_enum const *fld,
+					struct cpu_regfield_enum_val const *val,
+					size_t idx, struct dump_data *priv)
+{
+	int			rc;
+
+	priv->reg = fld->reg.reg;
+
+	if (1) {
+		if (val) {
+			rc = sprintf(priv->ptr, "%s" STR_FMT ":" STR_FMT,
+				     priv->delim,
+				     STR_ARG(&fld->reg.name),
+				     STR_ARG(&val->name));
+		} else {
+			rc = sprintf(priv->ptr, "%s" STR_FMT ":#%zu",
+				     priv->delim,
+				     STR_ARG(&fld->reg.name),
+				     idx);
+		}
+
+		priv->ptr += rc;
+		priv->delim = ", ";
+	}
+}
+
+
 void deserialize_dump_enum(struct cpu_regfield_enum const *fld,
 			   struct cpu_regfield_enum_val const *val,
 			   size_t idx, void *priv_)
@@ -146,8 +199,10 @@ void deserialize_dump_enum(struct cpu_regfield_enum const *fld,
 
 	if (priv->do_introspect)
 		deserialize_introspect_enum(fld, priv->buf, priv->buf_len);
-	else
+	else if (!priv->is_terse)
 		_deserialize_dump_enum(val, idx, priv->buf, priv->buf_len);
+	else
+		_deserialize_dump_enum_terse(fld, val, idx, priv);
 }
 
 void deserialize_dump_reserved(struct cpu_regfield_reserved const *fld,
@@ -200,7 +255,54 @@ static void dump_unit(struct cpu_unit const *unit)
 		dump_register(&unit->registers[i]);
 }
 
-int main(void)
+static void dump_regval(struct cpu_unit const units[], size_t num_units,
+			uintptr_t addr, uint32_t val)
+{
+	struct dump_data	priv_ = {
+		.do_introspect	= false,
+		.buf		= malloc(g_buf_len),
+		.buf_len	= g_buf_len,
+		.delim		= "",
+		.is_terse	= true,
+	};
+	struct dump_data	*priv = &priv_;
+	bool			rc;
+	
+
+	priv->ptr = priv->buf;
+
+	rc = deserialize_decode(units, num_units, addr, val, priv);
+	*priv->ptr = '\0';
+
+	if (!rc) {
+		printf("[0x%08" PRIxPTR "]\t\t\t%08x", addr, val);
+		/* unknown register */
+	} else if (!priv->reg) {
+		fprintf(stderr,
+			"register 0x%08" PRIxPTR " without known fields\n",
+		       (unsigned long)addr);
+		/* todo: known register but no known content */
+	} else {
+		size_t cnt;
+
+		cnt  = printf(STR_FMT, STR_ARG(&priv->reg->name)) + 0;
+		cnt /= 8;
+		while (cnt < 1) {
+			++cnt;
+			printf("\t");
+		}
+		
+		printf("\t[%s]", priv->buf);
+	}
+
+	if (addr == 0x021b001c && (val & 0xfff0) == 0x8030) {
+		printf("\n\t\t\t\t# ");
+		dump_regval(units, num_units,
+			    0xffff0000 + (val & 0x7) * 4, val >> 16);
+	}
+}
+
+int main(int argc, char *argv[])
 {
 	void const	*stream = STREAM;
 	size_t		stream_len = sizeof STREAM;
@@ -215,8 +317,17 @@ int main(void)
 	if (!deserialize_cpu_units(&units, &num_units, &stream, &stream_len))
 		abort();
 
+	if (getenv("TEST_BUFLEN"))
+		g_buf_len = atoi(getenv("TEST_BUFLEN"));
 
-	for (size_t i = 0; i < num_units; ++i) {
-		dump_unit(&units[i]);
+	if (argc == 1) {
+		for (size_t i = 0; i < num_units; ++i) {
+			dump_unit(&units[i]);
+		}
+	} else {
+		dump_regval(units, num_units,
+			    strtoul(argv[1], NULL, 0),
+			    strtoul(argv[2], NULL, 0));
+		printf("\n");
 	}
 }
