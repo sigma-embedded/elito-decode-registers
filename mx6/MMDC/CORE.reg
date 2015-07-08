@@ -6,6 +6,33 @@
     @enum 1 "32-bit"
     @enum 2 "64-bit"
 
+  @field BL
+    @boolean 19
+
+  @field COL
+    @bits 22-20
+    @enum 0 "9"
+    @enum 1 "10"
+    @enum 2 "11"
+    @enum 3 "8"
+    @enum 4 "12"
+
+  @field ROW
+    @bits 26-24
+    @enum 0 "11"
+    @enum 1 "12"
+    @enum 2 "13"
+    @enum 3 "14"
+    @enum 4 "15"
+    @enum 5 "16"
+
+  @field SDE_1
+    @boolean 30
+
+  @field SDE_0
+    @boolean 31
+
+
 @register MDPDC
   @addr 0x04
 
@@ -78,7 +105,7 @@
     @enum 0 0
 
   @field tAOFPD
-    @bits 14-12
+    @bits 29-27
     #integer
     @enum 0 0
 
@@ -124,7 +151,7 @@
     @enum 0 0
 
   @field tRPA
-    @bits 11-9
+    @bits 15
     @enum 0 0
     @enum 1 "+1"
 
