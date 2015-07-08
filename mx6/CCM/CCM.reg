@@ -1,0 +1,125 @@
+@register CBCMR
+  @addr 0x18
+  @field gpu2d_axi_clk_sel
+    @bits 0
+    @enum 0 "axi"
+    @enum 1 "system_133m_clk"
+  @field gpu3_axi_clk_sel
+    @bits 1
+    @enum 0 "axi"
+    @enum 1 "system_133m_clk"
+  @field gpu3d_core_clk_sel
+    @bits 5-4
+    @enum 0 "mmdc_ch0"
+    @enum 1 "pll3_sw_clk"
+    @enum 2 "594m"
+    @enum 3 "396m"
+  @field gpu3d_shader_clk_sel
+    @bits 9-8
+    @enum 0 "mmdc_ch0"
+    @enum 1 "pll3_sw_clk"
+    @enum 2 "594m"
+    @enum 3 "720m"
+  @field pcie_axi_clk_sel
+    @bits 10
+    @enum 0 "axi"
+    @enum 1 "system_133m_clk"
+  @field vdoaxi_axi_clk_sel
+    @bits 11
+    @enum 0 "axi"
+    @enum 1 "132m"
+  @field periph_clk2_sel
+    @bits 13-12
+    @enum 0 "pll3_sw_clk"
+    @enum 1 "osc_clk"
+    @enum 2 "pll2"
+  @field vpu_axi_clk_sel
+    @bits 15-14
+    @enum 0 "axi"
+    @enum 1 "396m"
+    @enum 2 "352m"
+  @field gpu2d_core_clk_sel
+    @bits 17-16
+    @enum 0 "axi"
+    @enum 1 "pll3"
+    @enum 2 "352m"
+    @enum 3 "396m"
+  @field pre_periph_clk_sel
+    @bits 19-18
+    @enum 0 "pll2"
+    @enum 1 "396m"
+    @enum 2 "352m"
+    @enum 3 "198m"
+  @field periph2_clk2_sel
+    @bits 20
+    @enum 0 "pll3_sw_clk"
+    @enum 1 "pll2"
+  @field gpu2d_core_clk_podf
+    @bits 25-23
+    #integer ("divide by x+1")
+    @enum 0 0
+  @field gpu3d_core_podf
+    @bits 28-26
+    #integer ("divide by x+1")
+    @enum 0 0
+  @field gpu3d_shader_podf
+    @bits 31-29
+    #integer ("divide by x+1")
+    @enum 0 0
+
+@register CBCDR
+  @addr 0x14
+  @field periph2_clk2_podf
+    @bits 2-0
+    #integer ("divide by x+1")
+    @enum 0 0
+
+  @field mmdc_ch1_axi_podf
+    @bits 5-3
+    #integer ("divide by x+1")
+    @enum 0 0
+
+  @field axi_sel
+    @bits 6
+    @enum 0 "periph_clk"
+    @enum 1 "alternative"
+
+  @field axi_alt_sel
+    @bits 7
+    @enum 0 "pll2"
+    @enum 1 "pll3"
+
+  @field ipg_podf
+    @bits 9-8
+    #integer ("divide by x+1")
+    @enum 0 0
+
+  @field ahb_podf
+    @bits 12-10
+    #integer ("divide by x+1")
+    @enum 0 0
+
+  @field axi_podf
+    @bits 18-16
+    #integer ("divide by x+1")
+    @enum 0 0
+
+  @field mmdc_ch0_axi_podf
+    @bits 21-19
+    #integer ("divide by x+1")
+    @enum 0 0
+
+  @field periph_clk_sel
+    @bits 25
+    @enum 0 "pll2"
+    @enum 1 "periph_clk2_clk"
+
+  @field periph2_clk_sel
+    @bits 26
+    @enum 0 "pll2"
+    @enum 1 "periph_clk2_clk"
+
+  @field periph2_clk_podf
+    @bits 29-27
+    #integer ("divide by x+1")
+    @enum 0 0
