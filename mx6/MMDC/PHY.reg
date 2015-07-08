@@ -176,3 +176,27 @@
     @bits 27-24
     #integer
     @enum 0 0
+
+@register MPDGHWST0
+  @addr 0x87c
+  @field HW_DG_LOW
+    @bits 10-0
+    #integer
+    @enum 0 0
+
+  @field HW_DG_UP
+    @bits 26-16
+    #integer
+    @enum 0 0
+
+@register MPDGHWST1
+  @use MPDGHWST0
+  @addr 0x880
+
+@register MPDGHWST2
+  @use MPDGHWST0
+  @addr 0x884
+
+@register MPDGHWST3
+  @use MPDGHWST0
+  @addr 0x888
