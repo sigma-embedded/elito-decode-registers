@@ -530,8 +530,7 @@ bool deserialize_decode(struct cpu_unit const units[], size_t unit_cnt,
 		for (size_t j = 0; j < unit->num_registers; ++j) {
 			struct cpu_register const	*reg = &unit->registers[j];
 
-			if (addr < base + reg->offset ||
-			    addr >= base + reg->offset + reg->width / 8)
+			if (addr != base + reg->offset)
 				continue;
 
 			deserialize_decode_reg(reg, val, priv);
