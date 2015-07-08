@@ -1,0 +1,13 @@
+#! /bin/bash
+
+D=$1
+F=$2
+shift 2
+
+( cd "$D" && cpp -P -E - < "$F" ) | \
+    grep '^[[:space:]]*wm 32' | \
+    while read op w addr val rest; do
+	val=${val%%;}
+	printf "wm 32 0x%08x 0x%08x\t# " "$addr" "$val"
+	"$@" "$addr" "$val"
+    done
