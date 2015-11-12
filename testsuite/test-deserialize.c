@@ -118,6 +118,78 @@ void deserialize_dump_bool(struct cpu_regfield_bool const *fld,
 		_deserialize_dump_bool_terse(fld, v, priv);
 }
 
+static char *deserialize_introspect_frac(struct cpu_regfield_frac const *fld,
+					 char *buf, size_t len)
+{
+	int	rc;
+
+	rc = snprintf(buf, len, "\t\t\t\t@frac 0x%x 0x%0x\n",
+		      fld->int_part, fld->frac_part);
+
+	assert((size_t)rc < len);
+
+	return buf;
+}
+
+struct frac_info {
+	reg_t		int_part;
+	reg_t		frac_part;
+	unsigned int	num_frac_bits;
+	double		v;
+};
+
+static char *_deserialize_dump_frac(struct frac_info const *v,
+				    char *buf, size_t len)
+{
+	int	rc;
+
+	rc = snprintf(buf, len, "%f", v->v);
+
+	assert((size_t)rc < len);
+
+	return buf;
+}
+
+static void _deserialize_dump_frac_terse(struct cpu_regfield_frac const *fld,
+					 struct frac_info const *v,
+					 struct dump_data *priv)
+{
+	int			rc;
+
+	priv->reg = fld->reg.reg;
+
+	if (1) {
+		rc = sprintf(priv->ptr, "%s" STR_FMT ":%f",
+			     priv->delim, STR_ARG(&fld->reg.name), v->v);
+
+		priv->ptr += rc;
+		priv->delim = ", ";
+	}
+}
+
+void deserialize_dump_frac(struct cpu_regfield_frac const *fld,
+			   reg_t int_part, reg_t frac_part,
+			   void *priv_)
+{
+	struct dump_data	*priv = priv_;
+	struct frac_info	info = {
+		.int_part	= int_part,
+		.frac_part	= frac_part,
+		.num_frac_bits	= __builtin_popcount(fld->frac_part)
+	};
+
+	info.v  = info.frac_part;
+	info.v /= 1 << info.num_frac_bits;
+	info.v += info.int_part;
+
+	if (priv->do_introspect)
+		deserialize_introspect_frac(fld, priv->buf, priv->buf_len);
+	else if (!priv->is_terse)
+		_deserialize_dump_frac(&info, priv->buf, priv->buf_len);
+	else
+		_deserialize_dump_frac_terse(fld, &info, priv);
+}
+
 static char *deserialize_introspect_enum(struct cpu_regfield_enum const *fld,
 					 char *buf, size_t len)
 {

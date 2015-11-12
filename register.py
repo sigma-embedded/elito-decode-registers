@@ -147,6 +147,66 @@ class Field(block.Block, block.Mergeable, block.Removable):
     TYPE_BOOL		= 2
     TYPE_RESERVED	= 3
 
+    class BitField:
+        def __init__(self, bits = None):
+            self.__v = None
+
+            if bits:
+                self.set(bits)
+
+        def set(self, bits):
+            if self.__v == None:
+                self.__v = []
+
+            splitted = []
+            for b in bits:
+                tmp = b.split(',')
+                splitted.extend(tmp)
+
+            for b in splitted:
+                tmp = b.split('-')
+                if len(tmp) == 2:
+                    self.__set_range(int(tmp[0]), int(tmp[1]))
+                elif len(tmp) == 1:
+                    self.__set_range(int(tmp[0]), int(tmp[0]))
+                else:
+                    raise Exception("Invalid bitrange '%s'" % b)
+
+        def __set_range(self, a, b):
+            if a < b:
+                self.__v.extend(range(a, b+1, +1))
+            else:
+                self.__v.extend(range(a, b-1, -1))
+
+        def __len__(self):
+            return len(self.__v)
+
+        def __getitem__(self, idx):
+            return self.__v[idx]
+
+        def __iter__(self):
+            return self.__v.__iter__()
+
+        def min(self):
+            if self.__v:
+                return min(self.__v)
+            else:
+                return -1
+
+        def get_mask(self):
+            res = 0
+            for b in self.__v:
+                assert((res & (1 << b)) == 0)
+                res |= (1 << b)
+
+            return res
+
+        def __eq__(self, a):
+            if a == None:
+                return self.__v == a
+
+            raise Exception("Unsupported comparision with %s" % a)
+
     class __Parser(block.Parser):
         def __init__(self, obj):
             super().__init__(obj)
@@ -205,7 +265,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
         self.__type = None
         self.__name = None
-        self.__bits = None
+        self.__bits = self.BitField()
         self.__desc = None
 
     def _assign_description(self, desc):
@@ -221,10 +281,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
             return self.get_id()
 
     def get_min_bit(self):
-        if self.__bits:
-            return min(self.__bits)
-        else:
-            return -1
+        return self.__bits.min()
 
     @staticmethod
     def cmp_by_bits(self, b):
@@ -245,29 +302,8 @@ class Field(block.Block, block.Mergeable, block.Removable):
         if bits != None:
             self._set_bits([bits,])
 
-    def __set_bit_range(self, a, b):
-        if self.__bits == None:
-            self.__bits = []
-
-        if a < b:
-            self.__bits.extend(range(a, b+1, +1))
-        else:
-            self.__bits.extend(range(a, b-1, -1))
-
     def _set_bits(self, bits):
-        splitted = []
-        for b in bits:
-            tmp = b.split(',')
-            splitted.extend(tmp)
-
-        for b in splitted:
-            tmp = b.split('-')
-            if len(tmp) == 2:
-                self.__set_bit_range(int(tmp[0]), int(tmp[1]))
-            elif len(tmp) == 1:
-                self.__set_bit_range(int(tmp[0]), int(tmp[0]))
-            else:
-                raise Exception("Invalid bitrange '%s'" % b)
+        self.__bits.set(bits)
 
     def get_enums(self, all = False):
         tmp = self.filter(lambda x: isinstance(x, Enum) and
@@ -304,14 +340,6 @@ class Field(block.Block, block.Mergeable, block.Removable):
         else:
             raise Exception("Unhandled type %d" % (self.__type))
 
-    def get_bitmask(self):
-        res = 0
-        for b in self.__bits:
-            assert((res & (1 << b)) == 0)
-            res |= (1 << b)
-
-        return res
-        
     def __convert_bits(self, v):
         o_v = v
         idx = 0
@@ -348,7 +376,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         top.add_u32(symbol, None)
 
         code   = top.create_block('enum')
-        code.add_x32(self.get_bitmask(), "bitmask (%s)" % self.__bits)
+        code.add_x32(self.__bits.get_mask(), "bitmask (%s)" % self.__bits)
 
         if len(self.__bits) <= 8:
             m = code.add_u8
