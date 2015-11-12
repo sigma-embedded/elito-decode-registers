@@ -7,6 +7,23 @@
   @use _IPU
   @reg 0x02600000 0x100000
 
+@unit IPU1-DI0
+  @reg 0x02640000 0x008000
+  @registers IPU-DI/
+
+@unit IPU1-DI1
+  @reg 0x02648000 0x008000
+  @registers IPU-DI/
+
 @unit[imx6dq] IPU2
   @use _IPU
   @reg 0x02A00000 0x100000
+
+@unit[imx6dq] IPU2-DI0
+  @reg 0x02A40000 0x008000
+  @registers IPU-DI/
+
+@unit[imx6dq] IPU2-DI1
+  @reg 0x02A48000 0x008000
+  @registers IPU-DI/
+
