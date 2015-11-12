@@ -350,22 +350,10 @@ static void _deserialize_dump_enum(struct cpu_regfield const *fld_,
 	struct cpu_regfield_enum const	*fld =
 		container_of(fld_, struct cpu_regfield_enum const, reg);
 
-	reg_t					mask = fld->bitmask;
 	unsigned int				idx = 0;
-	unsigned int				pos = 0;
 	struct cpu_regfield_enum_val const	*val = NULL;
 
-	while (mask) {
-		int	p = __builtin_ffs(mask) - 1;
-
-		if (0)
-			printf("  p=%d, idx=%x, pos=%d\n", p, idx, pos);
-
-		idx  |= ((v >> p) & 1) << pos;
-		++pos;
-
-		mask &= ~(1 << p);
-	}
+	idx = get_masked_value(v, fld->bitmask);
 
 	for (size_t i = 0; i < fld->num_enums; ++i) {
 		if (idx == fld->enums[i].val) {
