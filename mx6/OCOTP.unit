@@ -1,0 +1,3 @@
+@unit OCOTP
+  @reg 0x21bc000 0x1000
+  @registers OCOTP/

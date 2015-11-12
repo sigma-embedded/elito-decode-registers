@@ -1,0 +1,61 @@
+@register BOOT_CFG1
+  @addr 0x0450
+  @field boot_device_selection
+    @bits  7
+    @enum  0 "Boot from ???"
+    @enum  1 "Boot from NAND interface"
+
+  @field BT_TOGGLEMODE
+    @bits 5
+    @enum 0 "raw NAND"
+    @enum 1 "toggle mode NAND"
+
+  @field override_pad
+    @bits 4
+    @enum 0 "default values"
+    @enum 1 "use pad_settings"
+
+  @field num_devices
+    @bits 3-2
+    @enum 0 "1 device"
+    @enum 1 "2 devices"
+    @enum 2 "4 devices"
+
+  @field row_cycles
+    @bits 1-0
+    @enum 0 "3"
+    @enum 1 "2"
+    @enum 2 "4"
+    @enum 3 "5"
+
+@register BOOT_CFG2
+  @addr 0x0451
+  @field delay
+    @bits 7-5
+    @enum 0 "16 GPMICLK"
+    @enum 1 "1 GPMICLK"
+    @enum 2 "2 GPMICLK"
+    @enum 3 "3 GPMICLK"
+    @enum 4 "4 GPMICLK"
+    @enum 5 "5 GPMICLK"
+    @enum 6 "6 GPMICLK"
+    @enum 7 "7 GPMICLK"
+
+  @field search_count
+    @bits 4-3
+    @enum 0 "2"
+    @enum 1 "2"
+    @enum 2 "4"
+    @enum 3 "8"
+
+  @field pg_per_blk
+    @bits 2-1
+    @enum 0 "128"
+    @enum 1 "64"
+    @enum 2 "32"
+    @enum 3 "256"
+
+  @field reset_time
+    @bits 0
+    @enum 0 "12ms"
+    @enum 1 "22ms"
