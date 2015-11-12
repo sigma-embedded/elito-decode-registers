@@ -273,6 +273,53 @@ static bool pop_cpu_regfield_bool(struct cpu_regfield_bool **fld,
 	return true;
 }
 
+static uintmax_t get_masked_value(uintmax_t v, reg_t mask)
+{
+	uintmax_t	res = 0;
+	unsigned int	pos = 0;
+
+	while (mask) {
+		int	p = __builtin_ffs(mask) - 1;
+
+		res  |= ((v >> p) & 1) << pos;
+		++pos;
+
+		mask &= ~(1 << p);
+	}
+
+	return res;
+}
+
+static void _deserialize_dump_frac(struct cpu_regfield const *fld_,
+				   uintmax_t v, void *priv)
+{
+	struct cpu_regfield_frac const	*fld =
+		container_of(fld_, struct cpu_regfield_frac const, reg);
+
+	uintmax_t		parts[2];
+
+	parts[0] = get_masked_value(v, fld->int_part);
+	parts[1] = get_masked_value(v, fld->frac_part);
+
+	deserialize_dump_frac(fld, parts[0], parts[1], priv);
+}
+
+static bool pop_cpu_regfield_frac(struct cpu_regfield_frac **fld,
+				  void const **buf, size_t *sz)
+{
+	*fld = deserialize_alloc(sizeof **fld);
+	if (!(*fld))
+		return false;
+
+	if (!pop_u32(&(*fld)->int_part, buf, sz) ||
+	    !pop_u32(&(*fld)->frac_part, buf, sz))
+		return false;
+
+	(*fld)->reg.fn = _deserialize_dump_frac;
+
+	return true;
+}
+
 static void _deserialize_dump_reserved(struct cpu_regfield const *fld_,
 				       uintmax_t v, void *priv)
 {
@@ -405,6 +452,17 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 		break;
 	}
 
+	case TYPE_FRAC: {
+		struct cpu_regfield_frac	*fld;
+
+		if (!pop_cpu_regfield_frac(&fld, buf, sz))
+			return false;
+
+		*field = &fld->reg;
+		break;
+	}
+
+#if 0
 	case TYPE_RESERVED: {
 		struct cpu_regfield_reserved	*fld;
 

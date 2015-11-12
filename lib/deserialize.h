@@ -69,6 +69,12 @@ struct cpu_regfield_bool {
 	unsigned char			bit;
 };
 
+struct cpu_regfield_frac {
+	struct cpu_regfield		reg;
+	reg_t				int_part;
+	reg_t				frac_part;
+};
+
 struct cpu_regfield_enum_val {
 	struct string			name;
 	reg_t				val;
@@ -93,6 +99,9 @@ extern void deserialize_dump_bool(struct cpu_regfield_bool const *fld,
 extern void deserialize_dump_enum(struct cpu_regfield_enum const *fld,
 				  struct cpu_regfield_enum_val const *val,
 				  size_t idx, void *priv);
+extern void deserialize_dump_frac(struct cpu_regfield_frac const *fld,
+				  reg_t int_part, reg_t frac_part,
+				  void *priv);
 extern void deserialize_dump_reserved(struct cpu_regfield_reserved const *fld,
 				      reg_t v, void *priv);
 
