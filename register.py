@@ -145,7 +145,8 @@ class Enum(block.Block, block.Removable):
 class Field(block.Block, block.Mergeable, block.Removable):
     TYPE_ENUM		= 1
     TYPE_BOOL		= 2
-    TYPE_RESERVED	= 3
+    TYPE_FRAC		= 3
+    TYPE_RESERVED	= 4
 
     class BitField:
         def __init__(self, bits = None):
@@ -217,6 +218,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
                 '@description' : 1,
                 '@boolean' : [0, 1],
                 '@bits' : [1, -1],
+                '@frac' : 2,
                 '@reserved' : 0,
             }
 
@@ -245,6 +247,8 @@ class Field(block.Block, block.Mergeable, block.Removable):
                     self.o._set_boolean(l[1])
                 else:
                     self.o._set_boolean()
+            elif tag == '@frac':
+                self.o._set_frac(l[1], l[2])
             elif tag == '@reserved':
                 self.o._set_type(Field.TYPE_RESERVED)
             elif tag == '@bits':
@@ -267,6 +271,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         self.__name = None
         self.__bits = self.BitField()
         self.__desc = None
+        self.__frac = None
 
     def _assign_description(self, desc):
         self.__desc = desc
@@ -302,6 +307,16 @@ class Field(block.Block, block.Mergeable, block.Removable):
         if bits != None:
             self._set_bits([bits,])
 
+    def __get_frac_part(self, x):
+        pass
+
+    def _set_frac(self, int_part, frac_part):
+        assert(self.__frac == None)
+
+        self._set_type(Field.TYPE_FRAC)
+        self.__frac = [self.BitField([int_part,]),
+                       self.BitField([frac_part,])]
+
     def _set_bits(self, bits):
         self.__bits.set(bits)
 
@@ -326,6 +341,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
         self.__type = self.update_attr(self.__type, other.__type)
         self.__bits = self.update_attr(self.__bits, other.__bits)
+        self.__frac = self.update_attr(self.__frac, other.__frac)
         self.__name = self.update_attr(self.__name, other.__name)
         self.__desc = self.update_attr(self.__desc, other.__desc)
 
@@ -334,6 +350,8 @@ class Field(block.Block, block.Mergeable, block.Removable):
         elif self.__type == self.TYPE_ENUM:
             self.__update_enums(other)
         elif self.__type == self.TYPE_BOOL:
+            pass
+        elif self.__type == self.TYPE_FRAC:
             pass
         elif self.__type == self.TYPE_RESERVED:
             pass
@@ -410,6 +428,20 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
         return code
 
+    def __generate_code_frac(self, top):
+        assert(self.__type == self.TYPE_FRAC)
+
+        symbol = generator.Symbol("TYPE_FRAC", 3, "'frac' type")
+
+        top.add_symbol(symbol)
+        top.add_u32(symbol, None)
+        top.add_x32(self.__frac[0].get_mask(),
+                    "integer part (%s)" % self.__frac[0])
+        top.add_x32(self.__frac[1].get_mask(),
+                    "integer part (%s)" % self.__frac[1])
+
+        return top
+
     @staticmethod
     def generate_code_reserved(top, msk):
         symbol = generator.Symbol("TYPE_RESERVED", 3, "'reserved' type")
@@ -437,6 +469,8 @@ class Field(block.Block, block.Mergeable, block.Removable):
             self.__generate_code_enum(code)
         elif self.__type == self.TYPE_BOOL:
             self.__generate_code_bool(code)
+        elif self.__type == self.TYPE_FRAC:
+            self.__generate_code_frac(code)
         else:
             raise Exception("Unhandled type %d" % (self.__type))
 
