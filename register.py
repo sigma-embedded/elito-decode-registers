@@ -301,7 +301,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
     def is_reserved(self):
         return self.get_type() == Field.TYPE_RESERVED
-        
+
     def _set_boolean(self, bits = None):
         self._set_type(Field.TYPE_BOOL)
         if bits != None:
@@ -365,7 +365,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         msk = 0
         for b in self.__bits:
             assert((msk & (1 << b)) == 0)
-            
+
             tmp |= (v & 1) << b
             msk |= (1 << b)
             idx += 1
@@ -380,7 +380,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
                 res  |= tmp & 1
             else:
                 assert((tmp & 1) == 0)
-            
+
             msk >>= 1
             tmp >>= 1
 
@@ -450,11 +450,11 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
         code.add_string('reserved', "id")
         code.add_string('reserved', "name")
-        
+
         code.add_symbol(symbol)
         code.add_u32(symbol, None)
         code.add_u32(msk, "bitmask")
-    
+
     def generate_code(self, top):
         assert(not self.is_removed())
         assert(self.__type != None)
@@ -654,7 +654,7 @@ class Register(block.Block, block.Mergeable):
         msk = 0
         for f in rfields:
             msk |= f.get_bitmask()
-        
+
         fields  = list(filter(lambda x: not x.is_reserved(), all_fields))
         fields.sort(key = functools.cmp_to_key(lambda a, b: a.cmp_by_bits(a, b)))
 
@@ -664,7 +664,7 @@ class Register(block.Block, block.Mergeable):
 
         code.add_u32(cnt, "number of fields")
         code0 = code.create_block('%d fields' % cnt)
-        
+
         for f in fields:
             f.generate_code(code0)
 
