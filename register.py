@@ -288,6 +288,9 @@ class Field(block.Block, block.Mergeable, block.Removable):
     def get_min_bit(self):
         return self.__bits.min()
 
+    def get_bitmask(self):
+        return self.__bits.get_mask()
+
     @staticmethod
     def cmp_by_bits(self, b):
         return self.get_min_bit() - b.get_min_bit()
