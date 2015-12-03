@@ -450,7 +450,6 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 		break;
 	}
 
-#if 0
 	case TYPE_RESERVED: {
 		struct cpu_regfield_reserved	*fld;
 
