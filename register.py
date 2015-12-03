@@ -392,7 +392,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
     def __generate_code_enum(self, top):
         assert(self.__type == self.TYPE_ENUM)
 
-        symbol = generator.Symbol("TYPE_ENUM", 1, "'enum' type")
+        symbol = generator.Symbol("TYPE_ENUM", Field.TYPE_ENUM, "'enum' type")
         top.add_symbol(symbol)
         top.add_u32(symbol, None)
 
@@ -423,7 +423,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         assert(self.__type == self.TYPE_BOOL)
         assert(len(self.__bits) == 1)
 
-        symbol = generator.Symbol("TYPE_BOOL", 2, "'bool' type")
+        symbol = generator.Symbol("TYPE_BOOL", Field.TYPE_BOOL, "'bool' type")
 
         code.add_symbol(symbol)
         code.add_u32(symbol, None)
@@ -434,7 +434,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
     def __generate_code_frac(self, top):
         assert(self.__type == self.TYPE_FRAC)
 
-        symbol = generator.Symbol("TYPE_FRAC", 3, "'frac' type")
+        symbol = generator.Symbol("TYPE_FRAC", Field.TYPE_FRAC, "'frac' type")
 
         top.add_symbol(symbol)
         top.add_u32(symbol, None)
@@ -447,7 +447,8 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
     @staticmethod
     def generate_code_reserved(top, msk):
-        symbol = generator.Symbol("TYPE_RESERVED", 3, "'reserved' type")
+        symbol = generator.Symbol("TYPE_RESERVED", Field.TYPE_RESERVED,
+                                  "'reserved' type")
 
         code = top.create_block('reserved bits')
 
