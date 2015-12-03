@@ -420,6 +420,7 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 		return false;
 
 	switch (type) {
+#ifdef TYPE_BOOL
 	case TYPE_BOOL: {
 		struct cpu_regfield_bool	*fld;
 
@@ -429,7 +430,9 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 		*field = &fld->reg;
 		break;
 	}
+#endif
 
+#ifdef TYPE_ENUM
 	case TYPE_ENUM: {
 		struct cpu_regfield_enum	*fld;
 
@@ -439,7 +442,9 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 		*field = &fld->reg;
 		break;
 	}
+#endif
 
+#ifdef TYPE_FRAC
 	case TYPE_FRAC: {
 		struct cpu_regfield_frac	*fld;
 
@@ -449,7 +454,9 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 		*field = &fld->reg;
 		break;
 	}
+#endif
 
+#ifdef TYPE_RESERVED
 	case TYPE_RESERVED: {
 		struct cpu_regfield_reserved	*fld;
 
@@ -459,7 +466,8 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 		*field = &fld->reg;
 		break;
 	}
-		
+#endif
+
 	default:
 		BUG();
 		return false;
