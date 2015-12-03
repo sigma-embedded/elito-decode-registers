@@ -27,6 +27,8 @@
 
 #include DESERIALIZE_SYMBOLS
 
+#define _unused_ __attribute__((__unused__))
+
 #define container_of(_ptr, _type, _attr) __extension__		\
 	({								\
 		__typeof__( ((_type *)0)->_attr) *_tmp_mptr = (_ptr);	\
@@ -258,8 +260,8 @@ static void _deserialize_dump_bool(struct cpu_regfield const *fld_,
 	deserialize_dump_bool(fld, !!(v & (1 << fld->bit)), priv);
 }
 
-static bool pop_cpu_regfield_bool(struct cpu_regfield_bool **fld,
-					  void const **buf, size_t *sz)
+static bool _unused_ pop_cpu_regfield_bool(struct cpu_regfield_bool **fld,
+					   void const **buf, size_t *sz)
 {
 	*fld = deserialize_alloc(sizeof **fld);
 	if (!(*fld))
@@ -304,8 +306,8 @@ static void _deserialize_dump_frac(struct cpu_regfield const *fld_,
 	deserialize_dump_frac(fld, parts[0], parts[1], priv);
 }
 
-static bool pop_cpu_regfield_frac(struct cpu_regfield_frac **fld,
-				  void const **buf, size_t *sz)
+static bool _unused_ pop_cpu_regfield_frac(struct cpu_regfield_frac **fld,
+					   void const **buf, size_t *sz)
 {
 	*fld = deserialize_alloc(sizeof **fld);
 	if (!(*fld))
@@ -373,8 +375,8 @@ static bool pop_cpu_regfield_enum_val(struct cpu_regfield_enum_val *eval,
 		pop_string(&eval->name, buf, sz));
 }
 
-static bool pop_cpu_regfield_enum(struct cpu_regfield_enum **fld,
-					  void const **buf, size_t *sz)
+static bool _unused_ pop_cpu_regfield_enum(struct cpu_regfield_enum **fld,
+					   void const **buf, size_t *sz)
 {
 	reg_t		bitmask;
 	size_t		num_enums;
