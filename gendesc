@@ -13,12 +13,22 @@ import generator_stream
 
 def run(opt_defines=[], opt_directory=None, opt_c_fill=None,
         opt_c_defines=None, opt_datastream=None,
-        opt_endianess='little'):
+        opt_endianess='little', opt_only=None, opt_exclude=None):
     import block
     import unit
 
-    unit_files = glob.glob(os.path.join(opt_directory, "*.unit"))
+    unit_files = []
     top  = unit.Top()
+
+
+    for u in glob.glob(os.path.join(opt_directory, "*.unit")):
+        base = os.path.basename(u)[:-5]
+
+        if opt_exclude and (base in opt_exclude):
+            continue
+
+        if (not opt_only) or (base in opt_only):
+            unit_files.append(u)
 
     top.iterate_files(unit_files, opt_defines)
 
@@ -98,6 +108,12 @@ if __name__ == '__main__':
                         help='endianess of raw datastream',
                         choices = ['little', 'big'],
                         dest='opt_endianess', default = 'little')
+    parser.add_argument('--unit-only',  metavar='<unit>',
+                        action='append', help='include only listed unit files',
+                        dest='opt_only', default = None)
+    parser.add_argument('--unit-exclude', metavar='<unit>',
+                        action='append', help='exclude listed unit files',
+                        dest='opt_exclude', default = None)
     parser.add_argument('opt_directory')
 
     args = parser.parse_args()
