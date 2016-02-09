@@ -331,8 +331,8 @@ static void _deserialize_dump_reserved(struct cpu_regfield const *fld_,
 	deserialize_dump_reserved(fld, v, priv);
 }
 
-static bool pop_cpu_regfield_reserved(struct cpu_regfield_reserved **fld,
-				      void const **buf, size_t *sz)
+static bool _unused_ pop_cpu_regfield_reserved(struct cpu_regfield_reserved **fld,
+					       void const **buf, size_t *sz)
 {
 	*fld = deserialize_alloc(sizeof **fld);
 	if (!(*fld))
