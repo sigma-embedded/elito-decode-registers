@@ -287,7 +287,6 @@ class Field(block.Block, block.Mergeable, block.Removable):
         self.__bits = self.BitField()
         self.__desc = None
         self.__frac = None
-        self.__int  = None
 
     def _assign_description(self, desc):
         self.__desc = desc
@@ -337,16 +336,16 @@ class Field(block.Block, block.Mergeable, block.Removable):
                        self.BitField([frac_part,])]
 
     def _set_sint(self, part):
-        assert(self.__int == None)
+        assert(self.__bits == None)
 
         self._set_type(Field.TYPE_SINT)
-        self.__int = self.BitField([part,])
+        self.__bits = self.BitField([part,])
 
     def _set_uint(self, part):
-        assert(self.__int == None)
+        assert(self.__bits == None)
 
         self._set_type(Field.TYPE_UINT)
-        self.__int = self.BitField([part,])
+        self.__bits = self.BitField([part,])
 
     def _set_bits(self, bits):
         self.__bits.set(bits)
@@ -375,7 +374,6 @@ class Field(block.Block, block.Mergeable, block.Removable):
         self.__frac = self.update_attr(self.__frac, other.__frac)
         self.__name = self.update_attr(self.__name, other.__name)
         self.__desc = self.update_attr(self.__desc, other.__desc)
-        self.__int  = self.update_attr(self.__int,  other.__int)
 
         if self.__type == None:
             pass
@@ -480,25 +478,23 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
     def __generate_code_sint(self, top):
         assert(self.__type == self.TYPE_SINT)
-        assert(self.__bits == None)
 
         symbol = generator.Symbol("TYPE_SINT", Field.TYPE_SINT, "'signed int' type")
 
         top.add_symbol(symbol)
         top.add_type(symbol, None)
-        top.add_x32(self.__int.get_mask(), "sint (%s)" % self.__int)
+        top.add_x32(self.__bits.get_mask(), "sint (%s)" % self.__bits)
 
         return top
 
     def __generate_code_uint(self, top):
         assert(self.__type == self.TYPE_UINT)
-        assert(self.__bits == None)
 
         symbol = generator.Symbol("TYPE_UINT", Field.TYPE_UINT, "'signed int' type")
 
         top.add_symbol(symbol)
         top.add_type(symbol, None)
-        top.add_x32(self.__int.get_mask(), "uint (%s)" % self.__int)
+        top.add_x32(self.__bits.get_mask(), "uint (%s)" % self.__bits)
 
         return top
 
