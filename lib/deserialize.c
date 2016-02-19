@@ -410,10 +410,16 @@ static bool _unused_ pop_cpu_regfield_enum(struct cpu_regfield_enum **fld,
 }
 
 static void _deserialize_dump_int(struct cpu_regfield const *fld_,
-				  uintmax_t v, void *priv)
+				  uintmax_t v_, void *priv)
 {
 	struct cpu_regfield_int const	*fld =
 		container_of(fld_, struct cpu_regfield_int const, reg);
+	uint32_t			v = v_;
+
+	BUG_ON(fld->val == 0);
+
+	v &= fld->val;
+	v >>= (ffs(fld->val) - 1);
 
 	if (fld->is_signed)
 		/* TODO: fixed uintmax_t -> signed int conversion */
