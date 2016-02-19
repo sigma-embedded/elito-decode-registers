@@ -221,9 +221,9 @@ static bool pop_uintptr_t(uintptr_t *ptr, void const **buf, size_t *sz)
 
 static bool pop_size_t(size_t *ptr, void const **buf, size_t *sz)
 {
-	uint32_t	tmp;
+	uint16_t	tmp;
 
-	if (!pop_u32(&tmp, buf, sz))
+	if (!pop_u16(&tmp, buf, sz))
 		return false;
 
 	*ptr = tmp;

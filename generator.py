@@ -223,7 +223,7 @@ class CodeFactory(metaclass=abc.ABCMeta):
                               sz_width)
 
     def add_size_t(self, v, comment):
-        return self._add_int(v, comment, 32, False, "%u")
+        return self._add_int(v, comment, 16, False, "%u")
 
     def add_type(self, v, comment):
         return self._add_int(v, comment, 32, False, "%u")
