@@ -469,11 +469,11 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 {
 	struct string		id;
 	struct string		name;
-	uint32_t		type;
+	uint8_t			type;
 
 	if (!pop_string(&id, buf, sz) ||
 	    !pop_string(&name, buf, sz) ||
-	    !pop_u32(&type, buf, sz))
+	    !pop_u8(&type, buf, sz))
 		return false;
 
 	switch (type) {
