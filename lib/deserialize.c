@@ -40,6 +40,7 @@
 #  define BUG()		do {						\
 		fprintf(stderr, "%s:%u aborted\n", __func__, __LINE__); \
 		abort();						\
+		__builtin_unreachable();				\
 	} while (1)
 #endif
 
