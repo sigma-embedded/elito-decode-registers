@@ -52,7 +52,7 @@ struct cpu_register {
 	struct string			name;
 
 	struct cpu_unit const		*unit;
-	
+
 	size_t				num_fields;
 	struct cpu_regfield const	**fields;
 };

@@ -429,7 +429,6 @@ static void dump_regval(struct cpu_unit const units[], size_t num_units,
 	};
 	struct dump_data	*priv = &priv_;
 	bool			rc;
-	
 
 	priv->ptr = priv->buf;
 
@@ -453,7 +452,7 @@ static void dump_regval(struct cpu_unit const units[], size_t num_units,
 			++cnt;
 			printf("\t");
 		}
-		
+
 		printf("\t[%s]", priv->buf);
 	}
 

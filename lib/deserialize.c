@@ -74,7 +74,7 @@ static void const *assign_mem(size_t len, void const **src, size_t *sz)
 
 	if (*sz < len) {
 		printf("%zu < %zu\n", *sz, len);
-		
+
 		*sz = (size_t)(-1);
 		BUG();
 		return NULL;
