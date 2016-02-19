@@ -441,7 +441,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         top.add_x32(self.__frac[0].get_mask(),
                     "integer part (%s)" % self.__frac[0])
         top.add_x32(self.__frac[1].get_mask(),
-                    "integer part (%s)" % self.__frac[1])
+                    "frac part (%s)" % self.__frac[1])
 
         return top
 
