@@ -64,6 +64,35 @@
   @field WL_CYC_DEL0
     @uint 10-9
 
+  @field WL_DL_ABS_OFFSET1
+    @uint 22-16
+
+  @field WL_HC_DEL1
+    @boolean 24
+
+  @field WL_CYC_DEL1
+    @uint 26-25
+
+@register MPWLDECTRL1
+  @addr 0x810
+  @field WL_DL_ABS_OFFSET2
+    @uint 6-0
+
+  @field WL_HC_DEL2
+    @boolean 8
+
+  @field WL_CYC_DEL2
+    @uint 10-9
+
+  @field WL_DL_ABS_OFFSET3
+    @uint 22-16
+
+  @field WL_HC_DEL3
+    @boolean 24
+
+  @field WL_CYC_DEL3
+    @uint 26-25
+
 @register MPODTCTRL
   @addr 0x818
 
