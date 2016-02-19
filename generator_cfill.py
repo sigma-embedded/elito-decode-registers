@@ -69,7 +69,7 @@ class CodeFactory(generator.CodeFactory):
 
         def emit(self, lvl = 0, print_comment = True):
             res  = self.indent_line(lvl)
-            res += 'push_data(%s, %s);' % (self.__len, self.__repr)
+            res += 'push_data16(%s, %s);' % (self.__len, self.__repr)
             res  = self._append_comment(res, print_comment)
 
             return res + '\n'

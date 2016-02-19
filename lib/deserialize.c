@@ -180,9 +180,9 @@ static bool pop_reg_t_var(reg_t *s, unsigned int order,
 
 static bool pop_string(struct string *str, void const **buf, size_t *sz)
 {
-	uint32_t	dlen;
+	uint16_t	dlen;
 
-	if (!pop_u32(&dlen, buf, sz))
+	if (!pop_u16(&dlen, buf, sz))
 		return false;
 
 	if (!ASSIGN_IN_PLACE) {

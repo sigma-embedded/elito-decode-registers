@@ -63,7 +63,7 @@ class CodeFactory(generator.CodeFactory):
             if isinstance(v, generator.Symbol):
                 v = v.get_value()
 
-            self.__fmt = endian.fmt + 'I'
+            self.__fmt = endian.fmt + 'H'
             self.__v   = v
 
         def emit(self, lvl = 0, print_comment = True):
