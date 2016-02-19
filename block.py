@@ -16,6 +16,7 @@
 
 import abc
 import copy
+import sys
 
 class Parser(metaclass=abc.ABCMeta):
     def __init__(self, obj):
@@ -81,12 +82,20 @@ class Block(MultiParser, metaclass=abc.ABCMeta):
 
         l     = None
         block = self
+        lineno = 0
 
         for txt in input.readlines():
+            lineno = lineno + 1
             l = Line.parse(txt, l)
             if l.is_complete():
                 info  = l.expand(defines)
-                block = block.parse(info[2], info[0])
+
+                try:
+                    block = block.parse(info[2], info[0])
+                except:
+                    print("%s:%u failed to parse '%s'" %
+                          (input.name, lineno, l), file = sys.stderr)
+                    raise
 
                 if not block:
                     raise Exception("failed to parse '%s'" % l)

@@ -15,6 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import sys
 import glob
 import copy
 import functools
@@ -730,7 +731,12 @@ class Register(block.Block, block.Mergeable):
         code0 = code.create_block('%d fields' % cnt)
 
         for f in fields:
-            f.generate_code(code0)
+            try:
+                f.generate_code(code0)
+            except:
+                print("%s: failed to generate code for '%s'"
+                      % (self.__id, f.get_id(),), file = sys.stderr)
+                raise
 
         if msk != 0:
             Field.generate_code_reserved(code0, msk)
