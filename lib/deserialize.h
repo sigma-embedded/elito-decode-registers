@@ -93,6 +93,12 @@ struct cpu_regfield_reserved {
 	reg_t				bitmask;
 };
 
+struct cpu_regfield_int {
+	struct cpu_regfield		reg;
+	reg_t				val;
+	bool				is_signed;
+};
+
 extern void *deserialize_alloc(size_t len);
 extern void deserialize_dump_bool(struct cpu_regfield_bool const *fld,
 				  bool v, void *priv);
@@ -102,6 +108,10 @@ extern void deserialize_dump_enum(struct cpu_regfield_enum const *fld,
 extern void deserialize_dump_frac(struct cpu_regfield_frac const *fld,
 				  reg_t int_part, reg_t frac_part,
 				  void *priv);
+extern void deserialize_dump_uint(struct cpu_regfield_int const *fld,
+				  unsigned int val, void *priv);
+extern void deserialize_dump_sint(struct cpu_regfield_int const *fld,
+				  signed int val, void *priv);
 extern void deserialize_dump_reserved(struct cpu_regfield_reserved const *fld,
 				      reg_t v, void *priv);
 

@@ -118,6 +118,96 @@ void deserialize_dump_bool(struct cpu_regfield_bool const *fld,
 		_deserialize_dump_bool_terse(fld, v, priv);
 }
 
+static char *_deserialize_dump_uint(unsigned int v, char *buf, size_t len)
+{
+	int	rc;
+
+	rc = snprintf(buf, len, "%u", v);
+	assert((size_t)rc < len);
+	return buf;
+}
+
+static void _deserialize_dump_uint_terse(struct cpu_regfield_int const *fld,
+					 unsigned int v, struct dump_data *priv)
+{
+	int			rc;
+
+	priv->reg = fld->reg.reg;
+
+	if (1) {
+		rc = sprintf(priv->ptr, "%s" STR_FMT ":%u",
+			     priv->delim, STR_ARG(&fld->reg.name), v);
+
+		priv->ptr += rc;
+		priv->delim = ", ";
+	}
+}
+
+static char *deserialize_introspect_int(struct cpu_regfield_int const *fld,
+					char *buf, size_t len)
+{
+	int	rc;
+
+	rc = snprintf(buf, len, "\t\t\t\t@uint %08x\n", fld->val);
+
+	assert((size_t)rc < len);
+
+	return buf;
+}
+
+void deserialize_dump_uint(struct cpu_regfield_int const *fld,
+			   unsigned int v, void *priv_)
+{
+	struct dump_data	*priv = priv_;
+
+	if (priv->do_introspect)
+		deserialize_introspect_int(fld, priv->buf, priv->buf_len);
+	else if (!priv->is_terse)
+		_deserialize_dump_uint(v, priv->buf, priv->buf_len);
+	else
+		_deserialize_dump_uint_terse(fld, v, priv);
+}
+
+/* signed int */
+static char *_deserialize_dump_sint(signed int v, char *buf, size_t len)
+{
+	int	rc;
+
+	rc = snprintf(buf, len, "%d", v);
+	assert((size_t)rc < len);
+	return buf;
+}
+
+static void _deserialize_dump_sint_terse(struct cpu_regfield_int const *fld,
+					 signed int v, struct dump_data *priv)
+{
+	int			rc;
+
+	priv->reg = fld->reg.reg;
+
+	if (1) {
+		rc = sprintf(priv->ptr, "%s" STR_FMT ":%d",
+			     priv->delim, STR_ARG(&fld->reg.name), v);
+
+		priv->ptr += rc;
+		priv->delim = ", ";
+	}
+}
+
+void deserialize_dump_sint(struct cpu_regfield_int const *fld,
+			   signed int v, void *priv_)
+{
+	struct dump_data	*priv = priv_;
+
+	if (priv->do_introspect)
+		deserialize_introspect_int(fld, priv->buf, priv->buf_len);
+	else if (!priv->is_terse)
+		_deserialize_dump_sint(v, priv->buf, priv->buf_len);
+	else
+		_deserialize_dump_sint_terse(fld, v, priv);
+}
+
+
 static char *deserialize_introspect_frac(struct cpu_regfield_frac const *fld,
 					 char *buf, size_t len)
 {

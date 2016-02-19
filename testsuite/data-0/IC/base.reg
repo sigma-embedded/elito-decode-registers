@@ -6,10 +6,11 @@
     @boolean
     @description "IRQ enable"
 
-#  @field FREQUENCY
+  @field FREQUENCY
+     @integer 20-16
 #    @bits 2 28 20-16
 #    @int
-#    @description "Poll frequency"
+     @description "Poll frequency"
 
   @field TYPE
     @bits 10-9 16

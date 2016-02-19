@@ -146,7 +146,10 @@ class Field(block.Block, block.Mergeable, block.Removable):
     TYPE_ENUM		= 1
     TYPE_BOOL		= 2
     TYPE_FRAC		= 3
-    TYPE_RESERVED	= 4
+    TYPE_SINT		= 4
+    TYPE_UINT		= 5
+
+    TYPE_RESERVED	= 6
 
     class BitField:
         def __init__(self, bits = None):
@@ -219,6 +222,10 @@ class Field(block.Block, block.Mergeable, block.Removable):
                 '@boolean' : [0, 1],
                 '@bits' : [1, -1],
                 '@frac' : 2,
+                '@integer' : 1,
+                '@uint' : 1,
+                '@sint' : 1,
+                '@signed' : 1,
                 '@reserved' : 0,
             }
 
@@ -249,6 +256,10 @@ class Field(block.Block, block.Mergeable, block.Removable):
                     self.o._set_boolean()
             elif tag == '@frac':
                 self.o._set_frac(l[1], l[2])
+            elif tag in ['@integer', '@uint']:
+                self.o._set_uint(l[1])
+            elif tag in ['@signed', '@sint']:
+                self.o._set_sint(l[1])
             elif tag == '@reserved':
                 self.o._set_type(Field.TYPE_RESERVED)
             elif tag == '@bits':
@@ -272,6 +283,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         self.__bits = self.BitField()
         self.__desc = None
         self.__frac = None
+        self.__int  = None
 
     def _assign_description(self, desc):
         self.__desc = desc
@@ -320,6 +332,18 @@ class Field(block.Block, block.Mergeable, block.Removable):
         self.__frac = [self.BitField([int_part,]),
                        self.BitField([frac_part,])]
 
+    def _set_sint(self, part):
+        assert(self.__int == None)
+
+        self._set_type(Field.TYPE_SINT)
+        self.__int = self.BitField([part,])
+
+    def _set_uint(self, part):
+        assert(self.__int == None)
+
+        self._set_type(Field.TYPE_UINT)
+        self.__int = self.BitField([part,])
+
     def _set_bits(self, bits):
         self.__bits.set(bits)
 
@@ -347,6 +371,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         self.__frac = self.update_attr(self.__frac, other.__frac)
         self.__name = self.update_attr(self.__name, other.__name)
         self.__desc = self.update_attr(self.__desc, other.__desc)
+        self.__int  = self.update_attr(self.__int,  other.__int)
 
         if self.__type == None:
             pass
@@ -355,6 +380,10 @@ class Field(block.Block, block.Mergeable, block.Removable):
         elif self.__type == self.TYPE_BOOL:
             pass
         elif self.__type == self.TYPE_FRAC:
+            pass
+        elif self.__type == self.TYPE_SINT:
+            pass
+        elif self.__type == self.TYPE_UINT:
             pass
         elif self.__type == self.TYPE_RESERVED:
             pass
@@ -445,6 +474,30 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
         return top
 
+    def __generate_code_sint(self, top):
+        assert(self.__type == self.TYPE_SINT)
+        assert(self.__bits == None)
+
+        symbol = generator.Symbol("TYPE_SINT", Field.TYPE_SINT, "'signed int' type")
+
+        top.add_symbol(symbol)
+        top.add_u32(symbol, None)
+        top.add_x32(self.__int.get_mask(), "sint (%s)" % self.__int)
+
+        return top
+
+    def __generate_code_uint(self, top):
+        assert(self.__type == self.TYPE_UINT)
+        assert(self.__bits == None)
+
+        symbol = generator.Symbol("TYPE_UINT", Field.TYPE_UINT, "'signed int' type")
+
+        top.add_symbol(symbol)
+        top.add_u32(symbol, None)
+        top.add_x32(self.__int.get_mask(), "uint (%s)" % self.__int)
+
+        return top
+
     @staticmethod
     def generate_code_reserved(top, msk):
         symbol = generator.Symbol("TYPE_RESERVED", Field.TYPE_RESERVED,
@@ -475,6 +528,10 @@ class Field(block.Block, block.Mergeable, block.Removable):
             self.__generate_code_bool(code)
         elif self.__type == self.TYPE_FRAC:
             self.__generate_code_frac(code)
+        elif self.__type == self.TYPE_SINT:
+            self.__generate_code_sint(code)
+        elif self.__type == self.TYPE_UINT:
+            self.__generate_code_uint(code)
         else:
             raise Exception("Unhandled type %d" % (self.__type))
 

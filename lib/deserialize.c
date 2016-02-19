@@ -409,6 +409,54 @@ static bool _unused_ pop_cpu_regfield_enum(struct cpu_regfield_enum **fld,
 	return true;
 }
 
+static void _deserialize_dump_int(struct cpu_regfield const *fld_,
+				  uintmax_t v, void *priv)
+{
+	struct cpu_regfield_int const	*fld =
+		container_of(fld_, struct cpu_regfield_int const, reg);
+
+	if (fld->is_signed)
+		/* TODO: fixed uintmax_t -> signed int conversion */
+		deserialize_dump_sint(fld, (signed int)(v), priv);
+	else
+		deserialize_dump_uint(fld, (unsigned int)(v), priv);
+}
+
+static bool _unused_ pop_cpu_regfield_int(struct cpu_regfield_int **fld,
+					  void const **buf, size_t *sz,
+					  bool is_signed)
+{
+	*fld = deserialize_alloc(sizeof **fld);
+	if (!(*fld))
+		return false;
+
+	if (!pop_u32(&(*fld)->val, buf, sz))
+		return false;
+
+	(*fld)->is_signed = is_signed;
+	(*fld)->reg.fn = _deserialize_dump_int;
+
+	return true;
+}
+
+static bool _unused_ is_signed_type(uint32_t type)
+{
+	switch (type) {
+#ifdef TYPE_SINT
+	case TYPE_SINT:
+		return true;
+#endif
+
+#ifdef TYPE_UINT
+	case TYPE_UINT:
+		return false;
+#endif
+
+	default:
+		BUG();
+	}
+}
+
 static bool pop_cpu_regfield(struct cpu_regfield **field,
 			     void const **buf, size_t *sz)
 {
@@ -451,6 +499,25 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 		struct cpu_regfield_frac	*fld;
 
 		if (!pop_cpu_regfield_frac(&fld, buf, sz))
+			return false;
+
+		*field = &fld->reg;
+		break;
+	}
+#endif
+
+#if defined(TYPE_SINT) || defined(TYPE_UINT)
+#  ifdef TYPE_SINT
+	case TYPE_SINT:
+#  endif
+#  ifdef TYPE_UINT
+	case TYPE_UINT:
+#  endif
+	{
+		struct cpu_regfield_int		*fld;
+
+		if (!pop_cpu_regfield_int(&fld, buf, sz,
+					  is_signed_type(type)))
 			return false;
 
 		*field = &fld->reg;
