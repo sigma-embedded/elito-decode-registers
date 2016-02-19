@@ -427,7 +427,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
         symbol = generator.Symbol("TYPE_ENUM", Field.TYPE_ENUM, "'enum' type")
         top.add_symbol(symbol)
-        top.add_u32(symbol, None)
+        top.add_type(symbol, None)
 
         code   = top.create_block('enum')
         code.add_x32(self.__bits.get_mask(), "bitmask (%s)" % self.__bits)
@@ -459,7 +459,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         symbol = generator.Symbol("TYPE_BOOL", Field.TYPE_BOOL, "'bool' type")
 
         code.add_symbol(symbol)
-        code.add_u32(symbol, None)
+        code.add_type(symbol, None)
         code.add_u8(self.__bits[0], "bit#")
 
         return code
@@ -470,7 +470,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         symbol = generator.Symbol("TYPE_FRAC", Field.TYPE_FRAC, "'frac' type")
 
         top.add_symbol(symbol)
-        top.add_u32(symbol, None)
+        top.add_type(symbol, None)
         top.add_x32(self.__frac[0].get_mask(),
                     "integer part (%s)" % self.__frac[0])
         top.add_x32(self.__frac[1].get_mask(),
@@ -485,7 +485,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         symbol = generator.Symbol("TYPE_SINT", Field.TYPE_SINT, "'signed int' type")
 
         top.add_symbol(symbol)
-        top.add_u32(symbol, None)
+        top.add_type(symbol, None)
         top.add_x32(self.__int.get_mask(), "sint (%s)" % self.__int)
 
         return top
@@ -497,7 +497,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         symbol = generator.Symbol("TYPE_UINT", Field.TYPE_UINT, "'signed int' type")
 
         top.add_symbol(symbol)
-        top.add_u32(symbol, None)
+        top.add_type(symbol, None)
         top.add_x32(self.__int.get_mask(), "uint (%s)" % self.__int)
 
         return top
@@ -513,7 +513,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         code.add_string('reserved', "name")
 
         code.add_symbol(symbol)
-        code.add_u32(symbol, None)
+        code.add_type(symbol, None)
         code.add_u32(msk, "bitmask")
 
     def generate_code(self, top):

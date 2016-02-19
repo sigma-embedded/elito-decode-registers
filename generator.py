@@ -225,6 +225,9 @@ class CodeFactory(metaclass=abc.ABCMeta):
     def add_size_t(self, v, comment):
         return self._add_int(v, comment, 32, False, "%u")
 
+    def add_type(self, v, comment):
+        return self._add_int(v, comment, 32, False, "%u")
+
     def add_u32(self, v, comment, fmt = "%d"):
         return self._add_int(v, comment, 32, False, fmt)
 
