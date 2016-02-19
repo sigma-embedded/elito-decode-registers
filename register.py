@@ -191,6 +191,9 @@ class Field(block.Block, block.Mergeable, block.Removable):
         def __iter__(self):
             return self.__v.__iter__()
 
+        def __str__(self):
+            return "%s" % self.__v
+
         def min(self):
             if self.__v:
                 return min(self.__v)
