@@ -37,14 +37,10 @@
   @addr 0x04
 
   @field tCKSRE
-    @bits 2-0
-    #integer
-    @enum 0 0
+    @uint 2-0
 
   @field tCKSRX
-    @bits 5-3
-    #integer
-    @enum 0 0
+    @uint 5-3
 
   @field BOTH_CS_PD
     @boolean 6
@@ -53,62 +49,39 @@
     @boolean 7
 
   @field PWDT_0
-    @bits 11-8
-    #integer
-    @enum 0 0
+    @uint 11-8
 
   @field PWDT_1
-    @bits 15-12
-    #integer
-    @enum 0 0
+    @uint 15-12
 
   @field tCKE
-    @bits 18-16
-    #integer
-    @enum 0 0
+    @uint 18-16
 
   @field tPRCT_0
-    @bits 26-24
-    #integer
-    @enum 0 0
+    @uint 26-24
 
   @field tPRCT_1
-    @bits 30-28
-    #integer
-    @enum 0 0
+    @uint 30-28
 
 @register MDOTC
   @addr 0x08
   @field tODT_idle
-    @bits 8-4
-    #integer
-    @enum 0 0
+    @uint 8-4
 
   @field tODTLon
-    @bits 14-12
-    #integer
-    @enum 0 0
+    @uint 14-12
 
   @field tAXPD
-    @bits 19-16
-    #integer
-    @enum 0 0
+    @uint 19-16
 
   @field tANPD
-    @bits 23-20
-    #integer
-    @enum 0 0
+    @uint 23-20
 
   @field tAONPD
-    @bits 26-24
-    #integer
-    @enum 0 0
+    @uint 26-24
 
   @field tAOFPD
-    @bits 29-27
-    #integer
-    @enum 0 0
-
+    @uint 29-27
 
 @register MDCFG0
   @addr 0x0c
@@ -297,14 +270,10 @@
     @boolean
 
   @field CMD_ADDR_LSB
-    @bits 23-16
-    #@integer
-    @enum 0 0
+    @uint 23-16
 
   @field CMD_ADDR_MR_OP
-    @bits 31-24
-    #@integer
-    @enum 0 0
+    @uint 31-24
 
 @register MDREF
   @addr 0x20
@@ -312,9 +281,8 @@
     @boolean 0
 
   @field REFR
-    @bits 13-11
-    #integer (+1)
-    @enum 0 0
+    @uint 13-11
+    @description "x+1"
 
   @field REF_SEL
     @bits 15-14
@@ -324,58 +292,38 @@
     @enum 3 "none"
 
   @field REF_CNT
-    @bits 31-16
-    #integer
-    @enum 0
+    @uint 31-16
 
 @register MDRWD
   @addr 0x2c
   @field RTR_DIFF
-    @bits 2-0
-    #integer
-    @enum 0
+    @uint 2-0
 
   @field RTW_DIFF
-    @bits 5-3
-    #integer
-    @enum 0
+    @uint 5-3
 
   @field WTW_DIFF
-    @bits 8-6
-    #integer
-    @enum 0
+    @uint 8-6
 
   @field WTR_DIFF
-    @bits 11-9
-    #integer
-    @enum 0
+    @uint 11-9
 
   @field RTW_SAME
-    @bits 14-12
-    #integer
-    @enum 0
+    @uint 14-12
 
   @field tDAI
-    @bits 28-16
-    #integer
-    @enum 0
+    @uint 28-16
 
 @register MDOR
   @addr 0x30
   @field RST_to_CKE
-    @bits 5-0
-    #integer
-    @enum 0
+    @uint 5-0
 
   @field SDR_to_RST
-    @bits 13-8
-    #integer
-    @enum 0
+    @uint 13-8
 
   @field tXPR
-    @bits 23-16
-    #integer
-    @enum 0
+    @uint 23-16
 
 @register MDASP
   @addr 0x40

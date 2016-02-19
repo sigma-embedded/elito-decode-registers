@@ -128,13 +128,13 @@
   @use _SW_PAD_DDR_INPUT
   @use _SW_PAD_DDR_DSE
   @use _SW_PAD_DDR_ODT
-  @addr[imx6qd] 0x059c
-  @addr[imx6sdl] 0
+  @addr[imx6qd]  0x059c
+  @addr[imx6sdl] 0x04b4
 
 @register SW_PAD_CTL_PAD_DRAM_ODT1
   @use SW_PAD_CTL_PAD_DRAM_ODT0
-  @addr[imx6qd] 0x05a0
-  @addr[imx6sdl] 0
+  @addr[imx6qd]  0x05a0
+  @addr[imx6sdl] 0x04b8
 
 #### SDBAx
 

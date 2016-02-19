@@ -54,30 +54,31 @@
     @bits 20
     @enum 0 "pll3_sw_clk"
     @enum 1 "pll2"
+  @field pre_periph2_clk_sel
+    @bits 22-21
+    @enum 0 "PLL2"
+    @enum 1 "PFD2"
+    @enum 2 "PFD0"
+    @enum 3 "PFD2/2"
   @field gpu2d_core_clk_podf
-    @bits 25-23
-    #integer ("divide by x+1")
-    @enum 0 0
+    @uint 25-23
+    @description "divide by x+1"
   @field gpu3d_core_podf
-    @bits 28-26
-    #integer ("divide by x+1")
-    @enum 0 0
+    @uint 28-26
+    @description "divide by x+1"
   @field gpu3d_shader_podf
-    @bits 31-29
-    #integer ("divide by x+1")
-    @enum 0 0
+    @uint 31-29
+    @description "divide by x+1"
 
 @register CBCDR
   @addr 0x14
   @field periph2_clk2_podf
-    @bits 2-0
-    #integer ("divide by x+1")
-    @enum 0 0
+    @uint 2-0
+    @description "divide by x+1"
 
   @field mmdc_ch1_axi_podf
-    @bits 5-3
-    #integer ("divide by x+1")
-    @enum 0 0
+    @uint 5-3
+    @description "divide by x+1"
 
   @field axi_sel
     @bits 6
@@ -90,24 +91,20 @@
     @enum 1 "pll3"
 
   @field ipg_podf
-    @bits 9-8
-    #integer ("divide by x+1")
-    @enum 0 0
+    @uint 9-8
+    @description "divide by x+1"
 
   @field ahb_podf
-    @bits 12-10
-    #integer ("divide by x+1")
-    @enum 0 0
+    @uint 12-10
+    @description "divide by x+1"
 
   @field axi_podf
-    @bits 18-16
-    #integer ("divide by x+1")
-    @enum 0 0
+    @uint 18-16
+    @description "divide by x+1"
 
   @field mmdc_ch0_axi_podf
-    @bits 21-19
-    #integer ("divide by x+1")
-    @enum 0 0
+    @uint 21-19
+    @description "divide by x+1"
 
   @field periph_clk_sel
     @bits 25
@@ -120,6 +117,5 @@
     @enum 1 "periph_clk2_clk"
 
   @field periph2_clk_podf
-    @bits 29-27
-    #integer ("divide by x+1")
-    @enum 0 0
+    @uint 29-27
+    @description "divide by x+1"

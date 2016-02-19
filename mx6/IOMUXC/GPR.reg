@@ -40,10 +40,7 @@
     @boolean 7
 
   @field SOC_VERSION
-    @bits 15-8
-    #integer
-    @enum 0 0
-
+    @uint 15-8
 
   #TODO: complete me!
 
@@ -52,14 +49,10 @@
   #readonly
 
   @field ARM_WFI
-    @bits 3-0
-    #integer/bitmask
-    @enum 0 0
+    @uint 3-0
 
   @field ARM_WFE
-    @bits 7-4
-    #integer/bitmask
-    @enum 0 0
+    @uint 7-4
 
   @field L2_CLK_STOP
     @boolean 8

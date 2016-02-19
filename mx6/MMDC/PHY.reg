@@ -17,14 +17,10 @@
     @enum 15 "32ms"
 
   @field ZQ_HW_PU_RES
-    @bits 10-6
-    #integer
-    @enum 0 0
+    @uint 10-6
 
   @field ZQ_HW_PD_RES
-    @bits 15-11
-    #integer
-    @enum 0 0
+    @uint 15-11
 
   @field ZQ_HW_FOR
     @boolean 16
@@ -56,6 +52,17 @@
     @enum 0x14 "21cyc"
     @enum 0x1e "31cyc"
     @enum 0x1f "32cyc"
+
+@register MPWLDECTRL0
+  @addr 0x80c
+  @field WL_DL_ABS_OFFSET0
+    @uint 6-0
+
+  @field WL_HC_DEL0
+    @boolean 8
+
+  @field WL_CYC_DEL0
+    @uint 10-9
 
 @register MPODTCTRL
   @addr 0x818
@@ -120,30 +127,22 @@
   @addr 0x83c
   
   @field DG_DL_ABS_OFFSET0
-    @bits 6-0
-    #integer
-    @enum 0 0
+    @uint 6-0
 
   @field DG_HC_DEL0
-    @bits 11-8
-    #integer
-    @enum 0 0
+    @uint 11-8
 
   @field HW_DG_ERR
     @boolean 12
 
   @field DG_DL_ABS_OFFSET1
-    @bits 22-16
-    #integer
-    @enum 0 0
+    @uint 22-16
 
   @field DG_EXT_UP
     @boolean 23
 
   @field DG_HC_DEL1
-    @bits 27-24
-    #integer
-    @enum 0 0
+    @uint 27-24
 
   @field HW_DG_EN
     @boolean 28
@@ -158,36 +157,24 @@
   @addr 0x840
   
   @field DG_DL_ABS_OFFSET2
-    @bits 6-0
-    #integer
-    @enum 0 0
+    @uint 6-0
 
   @field DG_HC_DEL2
-    @bits 11-8
-    #integer
-    @enum 0 0
+    @uint 11-8
 
   @field DG_DL_ABS_OFFSET3
-    @bits 22-16
-    #integer
-    @enum 0 0
+    @uint 22-16
 
   @field DG_HC_DEL3
-    @bits 27-24
-    #integer
-    @enum 0 0
+    @uint 27-24
 
 @register MPDGHWST0
   @addr 0x87c
   @field HW_DG_LOW
-    @bits 10-0
-    #integer
-    @enum 0 0
+    @uint 10-0
 
   @field HW_DG_UP
-    @bits 26-16
-    #integer
-    @enum 0 0
+    @uint 26-16
 
 @register MPDGHWST1
   @use MPDGHWST0
