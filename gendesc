@@ -70,7 +70,7 @@ def run(opt_defines=[], opt_directory=None, opt_c_fill=None,
         generators.append([s, generator.CodeGenerator(f)])
 
     for g in generators:
-        g[1].add_u32(len(units), "number of units")
+        g[1].add_size_t(len(units), "number of units")
         
     for u in units:
         for g in generators:

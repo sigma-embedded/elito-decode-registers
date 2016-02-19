@@ -200,7 +200,7 @@ class Unit(block.Block, block.Mergeable):
 
         regs.sort(key = functools.cmp_to_key(lambda a, b: a.cmp_by_addr(a, b)))
 
-        code.add_u32(len(regs), "number of registers")
+        code.add_size_t(len(regs), "number of registers")
         block0 = code.create_block("registers")
 
         for r in regs:

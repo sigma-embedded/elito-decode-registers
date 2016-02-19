@@ -727,7 +727,7 @@ class Register(block.Block, block.Mergeable):
         if msk != 0:
             cnt += 1
 
-        code.add_u32(cnt, "number of fields")
+        code.add_size_t(cnt, "number of fields")
         code0 = code.create_block('%d fields' % cnt)
 
         for f in fields:

@@ -222,6 +222,9 @@ class CodeFactory(metaclass=abc.ABCMeta):
                               lambda x, c: self._add_int(x, c, width, False, fmt),
                               sz_width)
 
+    def add_size_t(self, v, comment):
+        return self._add_int(v, comment, 32, False, "%u")
+
     def add_u32(self, v, comment, fmt = "%d"):
         return self._add_int(v, comment, 32, False, fmt)
 
