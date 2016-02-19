@@ -68,11 +68,23 @@ static void push_u32(uint32_t v)
 	out_ptr = mempcpy(out_ptr, &v, sizeof v);
 }
 
-static void push_data(size_t sz, void const *data)
+static void push_data32(size_t sz, void const *data)
 {
 	push_u32(sz);
 	check_space(sz);
 	out_ptr = mempcpy(out_ptr, data, sz);
+}
+
+static void push_data16(size_t sz, void const *data)
+{
+	push_u16(sz);
+	check_space(sz);
+	out_ptr = mempcpy(out_ptr, data, sz);
+}
+
+static void push_data(size_t sz, void const *data)
+{
+	return push_data32(sz, data);
 }
 
 static void do_fill(void)
