@@ -164,7 +164,7 @@ class Line:
                     # quoted input
                     end_quote = c
                     state = 22
-                    c    = l.pop(0)
+                    c     = l.pop(0)
                 elif c == '#':
                     state = 1
                 elif c != '\\':
