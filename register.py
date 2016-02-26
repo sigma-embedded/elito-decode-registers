@@ -553,6 +553,9 @@ class Register(block.Block, block.Mergeable):
                 '@field' : 1,
                 '@template' : 0,
                 '@addr' : [1, 2],
+                "@pin,pad" : 1,
+                "@pin,af" : [0, -1],
+                "@pin,affield" : 1,
             }
 
             return self._validate_ranges(l, ARG_RANGES)
@@ -580,6 +583,9 @@ class Register(block.Block, block.Mergeable):
                     self.o._set_address(int(l[1],0), int(l[2]))
                 else:
                     raise Exception("Invalid address '%s'" % l)
+            elif tag.startswith("@pin,"):
+                print(l, file=sys.stderr)
+                pass
             else:
                 res = None
 
