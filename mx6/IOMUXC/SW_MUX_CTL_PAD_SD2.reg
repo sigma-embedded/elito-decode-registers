@@ -1,6 +1,34 @@
+@register SW_MUX_CTL_PAD_SD2_DATA0
+  @use SW_MUX_CTL_PAD
+  @addr[imx6qd] 0x0054
+  @pin,pad[imx6qd] "A22|mux"
+  @pin,af "usdhc@2|data@0", "ecspi@5|~miso",, "audmux@4|~rxd", \
+          "kpp|row@7", "gpio@5|io@15", "dcic@2|~out"
+  @field MUX_MODE
+    @enum 0
+      @name SD2_DATA0
+    @enum 1
+      @name ECSPI5_MISO
+      @seealso IOMUXC ECSPI5_MISO_SELECT_INPUT
+    @enum 3
+      @name AUD4_RXD
+      @seealso IOMUXC AUD4_INPUT_DA_AMX_SELECT_INPUT
+    @enum 4
+      @name KEY_ROW7
+      @seealso IOMUXC KEY_ROW7_SELECT_INPUT
+    @enum 5
+      @name GPIO5_IO15
+    @enum 6
+      @name DCIC2_OUT
+    @enum 7
+      @remove
+
 @register SW_MUX_CTL_PAD_SD2_DATA1
   @use SW_MUX_CTL_PAD
   @addr[imx6qd] 0x004c
+  @pin,pad[imx6qd] "E20|mux"
+  @pin,af "usdhc@2|data@1", "ecspi@5|ss@0", "eim|cs@2", "audmux@4|~txfs", \
+          "kpp|col@7", "gpio@5|io@14"
   @field MUX_MODE
     @enum 0
       @name SD2_DATA1
@@ -17,6 +45,60 @@
       @seealso IOMUXC KEY_COL7_SELECT_INPUT
     @enum 5
       @name GPIO5_IO14
+    @enum 6
+      @remove
+    @enum 7
+      @remove
+
+@register SW_MUX_CTL_PAD_SD2_DATA2
+  @use SW_MUX_CTL_PAD
+  @addr[imx6qd] 0x0050
+  @pin,pad[imx6qd] "A23|mux"
+  @pin,af "usdhc@2|data@2", "ecspi@5|ss@1", "eim|cs@3", "audmux@4|~txd", \
+          "kpp|row@6", "gpio@5|io@13"
+  @field MUX_MODE
+    @enum 0
+      @name SD2_DATA2
+    @enum 1
+      @name ECSPI5_SS1
+      @seealso IOMUXC ECSPI5_SS1_SELECT_INPUT
+    @enum 2
+      @name EIM_CS3_B
+    @enum 3
+      @name AUD4_TXD
+      @seealso IOMUXC AUD4_INPUT_DB_AMX_SELECT_INPUT
+    @enum 4
+      @name KEY_ROW6
+      @seealso IOMUXC KEY_ROW6_SELECT_INPUT
+    @enum 5
+      @name GPIO5_IO13
+    @enum 6
+      @remove
+    @enum 7
+      @remove
+
+@register SW_MUX_CTL_PAD_SD2_DATA3
+  @use SW_MUX_CTL_PAD
+  @addr[imx6qd] 0x035c
+  @pin,pad[imx6qd] "B22|mux"
+  @pin,af "usdhc@2|data@3", "ecspi@5|ss@3", "kpp|col@6", \
+          "audmux@4|~txclk", "gpio@1|io@12"
+  @field MUX_MODE
+    @enum 0
+      @name SD2_DATA3
+    @enum 1
+      @name ECSPI5_SS3
+      @seealso IOMUXC ECSPI5_MISO_SELECT_INPUT
+    @enum 2
+      @name KEY_COL6
+      @seealso IOMUXC KEY_COL6_SELECT_INPUT
+    @enum 3
+      @name AUD4_TXC
+      @seealso IOMUXC AUD4_INPUT_TXCLK_AMX_SELECT_INPUT
+    @enum 4
+      @remove
+    @enum 5
+      @name GPIO1_IO12
     @enum 6
       @remove
     @enum 7
