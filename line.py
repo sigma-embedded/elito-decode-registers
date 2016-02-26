@@ -31,6 +31,7 @@ class Line:
         self.__is_complete = False
         self.__exp_quote = None
         self.__level = None
+        self.open_list = False
         self.tokens = []
         pass
 
@@ -49,6 +50,7 @@ class Line:
         else:
             self.tokens.append(tk)
 
+        self.open_list = False
         self.__exp_quote = exp_quote
 
     def __set_complete(self, is_complete, level):
@@ -178,7 +180,9 @@ class Line:
                     state = 98
             elif state == 21:
                 # whitespace in normal input
-                if c not in [' ', '\t']:
+                if c == ',':
+                    state = 24
+                elif c not in [' ', '\t']:
                     state = 20
                 elif l:
                     c = l.pop(0)
@@ -189,7 +193,7 @@ class Line:
                 assert(end_quote)
                 if c == end_quote:
                     res.__add_token(tmp)
-                    state = 2
+                    state = 23
                 elif c != '\\':
                     tmp += c
                     c = l.pop(0)
@@ -199,6 +203,23 @@ class Line:
                 else:
                     res.__add_token(tmp, end_quote)
                     state = 98
+            elif state == 23:
+                # end_quote has been read; fetch next char
+                if l:
+                    c = l.pop(0)
+                state = 2
+            elif state == 24:
+                # comma ',' between eleemnts
+                if res.open_list:
+                    res.__add_token('')
+
+                res.open_list = True
+
+                if l:
+                    c = l.pop(0)
+                    state = 21
+                else:
+                    state = 99
             elif state == 98:
                 # backslashified line
                 res.__set_complete(False, indent_lvl.i)
