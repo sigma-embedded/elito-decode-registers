@@ -44,6 +44,13 @@
 	} while (1)
 #endif
 
+#ifndef BUG_ON
+#  define BUG_ON(_cond)	do {			\
+		if ((_cond))			\
+			BUG();			\
+	} while (0)
+#endif
+
 inline static void *deserialize_calloc(size_t cnt, size_t len)
 {
 	if (cnt != 0 && SIZE_MAX/cnt <= len) {
