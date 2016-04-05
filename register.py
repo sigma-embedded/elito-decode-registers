@@ -655,6 +655,12 @@ class Register(block.Block, block.Mergeable):
         else:
             return self.__is_template
 
+    def expand_address(self):
+        return self.__unit.get_address() + self.__offs
+
+    def get_offset(self):
+        return self.__offs
+
     @staticmethod
     def cmp_by_addr(a, b):
         return a.__offs - b.__offs
