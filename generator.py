@@ -83,6 +83,9 @@ class Symbol:
     def get_comment(self):
         return self.__comment
 
+    def get_fmt(self):
+        return self.__fmt
+
     def get_repr(self, str_fn):
         v = self.__value
 
