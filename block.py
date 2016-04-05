@@ -17,6 +17,37 @@
 import abc
 import copy
 import sys
+class Preprocessor:
+    class _SubprocessWrapper:
+        def __init__(self, cmdline):
+            import subprocess, io
+
+            self.__proc = subprocess.Popen(cmdline,
+                                           stdout = subprocess.PIPE)
+            self.__stdout = io.TextIOWrapper(self.__proc.stdout)
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            self.__stdout.close()
+            ret = self.__proc.wait()
+            if ret != 0:
+                raise Exception("subprocess failed with %d" % ret)
+
+        def __enter__(self):
+            return self.__stdout
+
+    def __init__(self, name):
+        self.__name = name
+
+class Preprocessor_plain(Preprocessor):
+    def __init__(self):
+        Preprocessor.__init__(self, "plain")
+
+    def call(self, file):
+        return open(file)
+
+_preprocessors = {
+    'plain' : Preprocessor_plain()
+}
 
 class Parser(metaclass=abc.ABCMeta):
     def __init__(self, obj):
@@ -112,8 +143,20 @@ class Block(MultiParser, metaclass=abc.ABCMeta):
 
     def iterate_files(self, files, defines):
         for f in files:
+            preproc=None
             with open(f) as input:
-                self.__read_file(input, defines)
+                l = input.readline()
+                if l.startswith('##!'):
+                    preproc = l[3:].strip().split()[0]
+
+            if preproc:
+                input_name = "[%s]%s" % (preproc, f)
+            else:
+                input_name = None
+                preproc = 'plain'
+
+            with _preprocessors[preproc].call(f) as input:
+                self.__read_file(input, defines, input_name)
 
     def parse(self, l, enabled):
         if not l:
