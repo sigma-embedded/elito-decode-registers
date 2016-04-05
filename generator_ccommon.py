@@ -110,3 +110,186 @@ class _Comment(_CodeObject):
         res += self.comment(self.get_comment())
 
         return res + '\n'
+
+class _Forward(_CodeObject):
+    def __init__(self, type, id, comment = None):
+        _CodeObject.__init__(self, comment)
+
+        self.__type = type
+        self.__id = id
+
+    def emit(self, lvl = 0, print_comment = True):
+        res  = self.indent_line(lvl)
+        res += self.__type;
+        res  = self.fill_line(res, STYLE_SYMBOL_VALUE_COLUMN)
+        res += self.__id + ";"
+
+        res  = self._append_comment(res, print_comment)
+        return res + '\n'
+
+class _BlockAttributeSimple(_CodeObject):
+    def __init__(self, symbol):
+        _CodeObject.__init__(self, symbol.get_comment())
+
+        self.__id = symbol.get_name()
+
+        value = symbol.get_value()
+
+        if symbol.get_fmt():
+            self.__value = symbol.get_repr(None)
+        elif isinstance(value, str):
+            self.__value = self.quote(value)
+        elif isinstance(value, bool):
+            self.__value = ['false', 'true'][value]
+        elif isinstance(value, generator.Symbol):
+            self.__value = value.get_name()
+        else:
+            self.__value = symbol.get_repr(None)
+
+    def emit(self, lvl = 0, print_comment = True):
+        res  = self.indent_line(lvl)
+        res += "%s =" % self.__id
+        res  = self.fill_line(res, lvl * 8 + 8)
+        res += self.__value + ','
+        res  = self.fill_line(res, STYLE_SYMBOL_VALUE_COLUMN)
+
+        res  = self._append_comment(res, print_comment)
+        return res + '\n'
+
+class _BlockAttributeBlock(_CodeObject, generator.CodeBlock):
+    def __init__(self, parent, id, comment = None):
+        _CodeObject.__init__(self, comment)
+        generator.CodeBlock.__init__(self, parent, comment)
+
+        self.__id = id
+
+    def _emit_pre(self, lvl, print_comment):
+        res  = self.indent_line(lvl)
+
+        if self.__id is not None:
+            res += "%s =" % (self.__id)
+            res  = self.fill_line(res, lvl * 8 + 8)
+
+        res += '{'
+        res  = self._append_comment(res, print_comment)
+        return res + '\n'
+
+    def _emit_post(self, lvl, print_comment):
+        if lvl < 0:
+            return ""
+
+        res  = self.indent_line(lvl)
+        res += '},'
+
+        return res + '\n'
+
+class _StructDesignator(generator.Symbol):
+    def __init__(self, id, value, comment, fmt = None):
+        super().__init__('.%s' % id, value, comment, fmt)
+
+    @staticmethod
+    def from_symbol(symbol):
+        return _StructDesignator(symbol.get_name(),
+                                 symbol.get_value(),
+                                 symbol.get_comment(),
+                                 symbol.get_fmt())
+
+
+class _ArrayDesignator(generator.Symbol):
+    def __init__(self, idx, value, comment):
+        if idx is None:
+            id = None
+        else:
+            id = '[%s]' % id
+
+        super().__init__(id, value, comment)
+
+class _StructAttributeSimple(_BlockAttributeSimple):
+    def __init__(self, symbol):
+        _BlockAttributeSimple.__init__(self, symbol)
+
+class _StructAttributeBlock(_BlockAttributeBlock):
+    def __init__(self, parent, id, comment):
+        _BlockAttributeBlock.__init__(self, parent, '.%s' % id, comment)
+
+class _ArrayElementSimple(_BlockAttributeSimple):
+    def __init__(self, idx, value, comment):
+        _BlockAttributeSimple.__init__(self, _ArrayDesignator(id, value, comment))
+
+class _ArrayElementBlock(_BlockAttributeBlock):
+    def __init__(self, parent, idx, comment):
+        if idx is None:
+            id = None
+        else:
+            id = '[%s]' % idx
+
+        _BlockAttributeBlock.__init__(self, parent, id, comment)
+
+class _Array(_CodeObject, generator.CodeBlock):
+    def __init__(self, parent, type, name, dim, comment = None):
+        _CodeObject.__init__(self, comment)
+        generator.CodeBlock.__init__(self, parent, comment)
+
+        self.__id = name
+        self.__type = type
+        self.__dim = dim
+
+    def _emit_pre(self, lvl, print_comment):
+        if lvl < 0:
+            return ""
+
+        res  = self.indent_line(lvl)
+        res += "static %s const" % self.__type
+        res  = self.fill_line(res, STYLE_SYMBOL_VALUE_COLUMN)
+        res += "%s[%s] = {" % (self.__id, self.__dim)
+
+        if print_comment and self.get_comment():
+            res += ' ' + self.comment('{{{ ' + self.get_comment())
+
+        return res + '\n'
+
+    def _emit_post(self, lvl, print_comment):
+        if lvl < 0:
+            return ""
+
+        res  = self.indent_line(lvl)
+        res += '};'
+
+        if print_comment and self.get_comment():
+            res += ' ' + self.comment('}}} ' + self.get_comment())
+
+        return res + '\n'
+
+class _Struct(_CodeObject, generator.CodeBlock):
+    def __init__(self, parent, type, name, comment = None):
+        _CodeObject.__init__(self, comment)
+        generator.CodeBlock.__init__(self, parent, comment)
+
+        self.__id = name
+        self.__type = type
+
+    def _emit_pre(self, lvl, print_comment):
+        if lvl < 0:
+            return ""
+
+        res  = self.indent_line(lvl)
+        res += "static %s const" % self.__type
+        res  = self.fill_line(res, STYLE_SYMBOL_VALUE_COLUMN)
+        res += "%s = {" % (self.__id)
+
+        if print_comment and self.get_comment():
+            res += ' ' + self.comment('{{{ ' + self.get_comment())
+
+        return res + '\n'
+
+    def _emit_post(self, lvl, print_comment):
+        if lvl < 0:
+            return ""
+
+        res  = self.indent_line(lvl)
+        res += '};'
+
+        if print_comment and self.get_comment():
+            res += ' ' + self.comment('}}} ' + self.get_comment())
+
+        return res + '\n'
