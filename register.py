@@ -83,6 +83,7 @@ class Enum(block.Block, block.Removable):
             ARG_RANGES = {
                 '@name'    : 1,
                 '@seealso' : [1,-1],
+                "@pin,af"  : 1,
             }
 
             return self._validate_ranges(l, ARG_RANGES)
@@ -97,6 +98,8 @@ class Enum(block.Block, block.Removable):
                 self.o._assign_name(l[1])
             elif tag == '@seealso':
                 pass            # TODO: ignore for now...
+            elif tag == "@pin,af":
+                self.o._assign_af(l[1])
             else:
                 assert(False)
 
@@ -121,6 +124,10 @@ class Enum(block.Block, block.Removable):
 
     def _assign_name(self, name):
         self.__name = name
+
+    def _assign_af(self, af):
+        reg = self.__field.get_register()
+        reg.assign_af(self.__value, af, self.__field)
 
     def get_value(self):
         return self.__value
@@ -638,6 +645,10 @@ class Register(block.Block, block.Mergeable):
                                             self.__unit.get_id(),
                                             self.__offs,
                                             self.__width)
+
+    def assign_af(self, num, fn, field):
+        if not isinstance(self.__pin, _NoPin):
+            self.__pin.add(num, fn, field)
 
     def update(self, other):
         assert(isinstance(other, Unit))
