@@ -18,7 +18,7 @@ def run(opt_defines=[], opt_directory=None, opt_c_fill=None,
     import unit
 
     unit_files = []
-    top  = unit.Top()
+    top  = unit.Top(None)
 
 
     for u in glob.glob(os.path.join(opt_directory, "*.unit")):

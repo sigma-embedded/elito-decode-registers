@@ -46,9 +46,10 @@ class Top(block.Top):
 
             return res
 
-    def __init__(self):
+    def __init__(self, bga):
         block.Top.__init__(self)
         self.add_parser(Top.__Parser(self))
+        self.bga = bga
 
     def get_units(self):
         return self.filter(lambda f: isinstance(f, Unit))
@@ -108,6 +109,7 @@ class Unit(block.Block, block.Mergeable):
         self.__directory = None
         self.__is_enabled = True
         self.__memory = None
+        self.bga = top.bga
 
     @staticmethod
     def cmp_by_addr(self, b):
