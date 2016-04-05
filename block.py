@@ -17,6 +17,8 @@
 import abc
 import copy
 import sys
+import os.path
+
 class Preprocessor:
     class _SubprocessWrapper:
         def __init__(self, cmdline):
@@ -38,6 +40,15 @@ class Preprocessor:
     def __init__(self, name):
         self.__name = name
 
+class Preprocessor_m4(Preprocessor):
+    def __init__(self):
+        Preprocessor.__init__(self, "m4")
+
+    def call(self, file):
+        return Preprocessor._SubprocessWrapper(['m4', '-E', '-Q', '-P',
+                                                '-I', os.path.dirname(file),
+                                                file])
+
 class Preprocessor_plain(Preprocessor):
     def __init__(self):
         Preprocessor.__init__(self, "plain")
@@ -46,6 +57,7 @@ class Preprocessor_plain(Preprocessor):
         return open(file)
 
 _preprocessors = {
+    'm4' :    Preprocessor_m4(),
     'plain' : Preprocessor_plain()
 }
 
