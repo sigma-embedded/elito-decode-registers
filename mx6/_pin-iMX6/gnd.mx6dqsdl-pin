@@ -1,0 +1,28 @@
+##! m4	--*- m4 -*--
+
+@pin _GND
+  @template
+  @name		"GND"
+  @power	"*GND"
+
+m4_include(`../../lib/cpudef.m4')
+foreach(`b',
+m4_dnl From Table 20 "Supplies Contact Assignment"
+(m4_dnl
+A4, A8, A13, A25, B4, C1, C4, C6, C10, D3, D6, D8, E5,
+E6, E7, F5, F6, F7, F8, G3, G10, G19, H8, H12, H15,
+H18, J2, J8, J12, J15, J18, K8, K10, K12, K15, K18, L2,
+L5, L8, L10, L12, L15, L18, M8, M10, M12, M15, M18,
+N8, N10, N15, N18, P8, P10, P12, P15, P18, R8, R12,
+R15, R17, T8, T11, T12, T15, T17, T19, U8, U11, U12,
+U15, U17, U19, V8, V19, W3, W7, W8, W9, W10, W11,
+W12, W13, W15, W16, W17, W18, W19, Y5, Y24, AA7,
+AA10, AA13, AA16, AA19, AA22, AB3, AB24, AD4,
+AD7, AD10, AD13, AD16, AD19, AD22, AE1, AE25,
+),
+
+`@pin GND_`'b
+  @use _GND
+  @pad "b"
+
+')

@@ -1,0 +1,22 @@
+@pin SD2_DATx
+  @template
+  @power       "nvcc_sd2"
+  @reset,af    5
+  @reset,dir   "in"
+  @reset,val   "pu|100k"
+
+@pin SD2_DAT0
+  @pad[imx6qd] "A22"
+  @use SD2_DATx
+
+@pin SD2_DAT1
+  @pad[imx6qd] "E20"
+  @use SD2_DATx
+
+@pin SD2_DAT2
+  @pad[imx6qd] "A23"
+  @use SD2_DATx
+
+@pin SD2_DAT3
+  @pad[imx6qd] "B22"
+  @use SD2_DATx

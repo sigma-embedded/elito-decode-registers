@@ -1,0 +1,6 @@
+@bga iMX6DQ
+    @pins _pin-iMX6/*.pin
+    @pins _pin-iMX6/*.mx6dqsdl-pin
+    @rows 26
+    @cols 25
+    @skiprows O Q S X Z
