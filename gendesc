@@ -10,17 +10,28 @@ import generator
 import generator_cfill
 import generator_cdef
 import generator_stream
+import generator_cbga
 
 def run(opt_defines=[], opt_directory=None, opt_c_fill=None,
         opt_c_defines=None, opt_datastream=None,
-        opt_endianess='little', opt_only=None, opt_exclude=None):
+        opt_endianess='little', opt_only=None, opt_exclude=None,
+        opt_bga=None):
     import block
     import unit
 
     unit_files = []
-    top  = unit.Top(None)
 
+    if not opt_bga:
+        bga = None
+    else:
+        import bga
 
+        bga = bga.Top()
+        bga.iterate_files([opt_bga,], opt_defines)
+        bga.read_pins(opt_directory, opt_defines)
+        bga.merge()
+
+    top  = unit.Top(bga)
     for u in glob.glob(os.path.join(opt_directory, "*.unit")):
         base = os.path.basename(u)[:-5]
 
@@ -69,6 +80,14 @@ def run(opt_defines=[], opt_directory=None, opt_c_fill=None,
 
         generators.append([s, generator.CodeGenerator(f)])
 
+    if bga:
+        f = generator_cbga.CodeFactory()
+        g = generator.CodeGenerator(f)
+        bga.generate_code(g)
+
+        import sys
+        sys.stdout.write(g.emit())
+
     for g in generators:
         g[1].add_size_t(len(units), "number of units")
         
@@ -114,6 +133,9 @@ if __name__ == '__main__':
     parser.add_argument('--unit-exclude', metavar='<unit>',
                         action='append', help='exclude listed unit files',
                         dest='opt_exclude', default = None)
+    parser.add_argument('--bga', metavar='<bga>',
+                        help='BGA to be used when generating pin definitions',
+                        dest='opt_bga', default = None)
     parser.add_argument('opt_directory')
 
     args = parser.parse_args()
