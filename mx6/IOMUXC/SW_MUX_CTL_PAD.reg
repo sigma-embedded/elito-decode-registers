@@ -1,6 +1,5 @@
 @register SW_MUX_CTL_PAD
   @template
-  @pin,affield "MUX_MODE"
 
   @field SION
     @bits 4
