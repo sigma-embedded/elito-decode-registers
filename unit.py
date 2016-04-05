@@ -209,3 +209,6 @@ class Unit(block.Block, block.Mergeable):
             r.generate_code(block0)
 
         return code
+
+    def get_address(self):
+        return self.__memory[0]
