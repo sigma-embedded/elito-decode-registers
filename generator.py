@@ -261,6 +261,7 @@ class CodeGenerator(CodeBlock):
     def __init__(self, factory):
         CodeBlock.__init__(self, None, None)
         self.__factory = factory
+        self.__existing = set()
 
     def _emit_pre(self, lvl, print_comment):
         pass
@@ -280,8 +281,12 @@ class CodeGenerator(CodeBlock):
 
         return self.__factory.create_block(parent, comment)
 
+    def add_and_test_existing(self, symbol):
+        if symbol in self.__existing:
+            return True
 
-
+        self.__existing.add(symbol)
+        return False
 
 def _test(factory):
     top = CodeGenerator(factory)
