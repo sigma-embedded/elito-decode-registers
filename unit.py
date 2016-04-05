@@ -210,5 +210,11 @@ class Unit(block.Block, block.Mergeable):
 
         return code
 
+    def find_pin(self, id):
+        return self.bga.find(id)
+
+    def have_bga(self):
+        return self.bga is not None
+
     def get_address(self):
         return self.__memory[0]
