@@ -93,6 +93,14 @@ class Symbol:
         else:
             return "%s" % v
 
+class Reference(Symbol):
+    def __init__(self, id, comment):
+        Symbol.__init__(self, id, None, comment)
+
+class Integer(Symbol):
+    def __init__(self, name, value, comment, fmt = '%d'):
+        Symbol.__init__(self, name, value, comment, fmt)
+
 class CodeBlock(CodeObject):
     class __Wrap:
         def __init__(self, fn, o):
