@@ -23,6 +23,11 @@ import functools
 import block
 import generator
 
+import pin
+
+class _NoPin:
+    pass
+
 class Top(block.Top):
     class __Parser(block.Parser):
         def __init__(self, obj):
@@ -58,6 +63,16 @@ class Top(block.Top):
 
     def get_unit(self):
         return self.__unit
+
+    def find_pins(self, id):
+        if not self.__unit.have_bga():
+            res = _NoPin()
+        else:
+            res = self.__unit.find_pin(id)
+            if not res:
+                raise Exception("No such pin '%s'" % id)
+
+        return res
 
 class Enum(block.Block, block.Removable):
     class __Parser(block.Parser):
@@ -559,9 +574,7 @@ class Register(block.Block, block.Mergeable):
                 '@field' : 1,
                 '@template' : 0,
                 '@addr' : [1, 2],
-                "@pin,pad" : 1,
-                "@pin,af" : [0, -1],
-                "@pin,affield" : 1,
+                "@pin" : 1,
             }
 
             return self._validate_ranges(l, ARG_RANGES)
@@ -589,9 +602,8 @@ class Register(block.Block, block.Mergeable):
                     self.o._set_address(int(l[1],0), int(l[2]))
                 else:
                     raise Exception("Invalid address '%s'" % l)
-            elif tag.startswith("@pin,"):
-                print(l, file=sys.stderr)
-                pass
+            elif tag == "@pin":
+                self.o._set_pins(l[1])
             else:
                 res = None
 
@@ -618,6 +630,7 @@ class Register(block.Block, block.Mergeable):
         self.__width = None
 
         self.__fields = {}
+        self.__pin = None
 
     def __str__(self):
         return "REG %s (%s@%s, %08x/%d)" % (self.__id,
@@ -632,6 +645,12 @@ class Register(block.Block, block.Mergeable):
         self.__is_template = self.update_attr(self.__is_template,
                                               other.__is_template)
 
+    def _set_pins(self, id):
+        if self.__pin:
+            raise Exception("Duplicate @pin tag with id '%s'" % id)
+
+        self.__pin = self.__top.find_pins(id)
+
     def clone(self, unit = None):
         from unit import Unit
 
@@ -643,6 +662,7 @@ class Register(block.Block, block.Mergeable):
         res = Register(self.__top, self.__id, unit, self.is_valid())
 
         res.__is_template = self.__is_template
+        res.__pin         = self.__pin
         res.__name        = copy.copy(self.__name)
         res.__offs        = copy.copy(self.__offs)
         res.__width       = copy.copy(self.__width)
@@ -704,6 +724,8 @@ class Register(block.Block, block.Mergeable):
         self.__name  = self.update_attr(self.__name, reg.__name)
         self.__offs  = self.update_attr(self.__offs, reg.__offs)
         self.__width = self.update_attr(self.__width, reg.__width)
+
+        assert(reg.__pin == None)
 
     def _merge_pre(self):
         fields = self.filter(lambda f: isinstance(f, Field))
