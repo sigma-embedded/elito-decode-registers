@@ -105,7 +105,7 @@ class Block(MultiParser, metaclass=abc.ABCMeta):
 
                 l = None
 
-        while block != self:
+        while block and block != self:
             #print(block)
             block = block.parse(['@end'], True)
 
