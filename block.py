@@ -77,12 +77,15 @@ class Block(MultiParser, metaclass=abc.ABCMeta):
     def is_valid(self):
         return self.__is_valid
 
-    def __read_file(self, input, defines):
+    def __read_file(self, input, defines, input_name = None):
         from line import Line
 
         l     = None
         block = self
         lineno = 0
+
+        if input_name is None:
+            input_name = input.name
 
         for txt in input.readlines():
             lineno = lineno + 1
@@ -94,7 +97,7 @@ class Block(MultiParser, metaclass=abc.ABCMeta):
                     block = block.parse(info[2], info[0])
                 except:
                     print("%s:%u failed to parse '%s'" %
-                          (input.name, lineno, l), file = sys.stderr)
+                          (input_name, lineno, l), file = sys.stderr)
                     raise
 
                 if not block:
