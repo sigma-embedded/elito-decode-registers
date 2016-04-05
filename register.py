@@ -274,6 +274,8 @@ class Field(block.Block, block.Mergeable, block.Removable):
             return res
 
     def __init__(self, top, name, is_valid, is_removed = False):
+        assert(isinstance(top, Register))
+
         block.Block.__init__(self, top, is_valid)
         block.Mergeable.__init__(self)
         block.Removable.__init__(self, is_removed)
@@ -282,6 +284,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
         self.__id   = name
 
+        self.__register = top
         self.__type = None
         self.__name = None
         self.__bits = self.BitField()
@@ -293,6 +296,9 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
     def get_id(self):
         return self.__id
+
+    def get_register(self):
+        return self.__register
 
     def get_name(self):
         if self.__name != None:
