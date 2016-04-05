@@ -55,7 +55,6 @@ def run(opt_defines=[], opt_directory=None, opt_c_fill=None,
     units = list(filter(lambda x: x.is_enabled(), units.values()))
     units.sort(key = functools.cmp_to_key(lambda a, b: a.cmp_by_addr(a, b)))
 
-
     generators = []
 
     if opt_c_defines:
@@ -90,7 +89,7 @@ def run(opt_defines=[], opt_directory=None, opt_c_fill=None,
 
     for g in generators:
         g[1].add_size_t(len(units), "number of units")
-        
+
     for u in units:
         for g in generators:
             u.generate_code(g[1])
