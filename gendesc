@@ -13,7 +13,7 @@ import generator_stream
 import generator_cbga
 
 def run(opt_defines=[], opt_directory=None, opt_c_fill=None,
-        opt_c_defines=None, opt_datastream=None,
+        opt_c_defines=None, opt_datastream=None, opt_datastream_c=None,
         opt_endianess='little', opt_only=None, opt_exclude=None,
         opt_bga=None):
     import block
@@ -68,7 +68,8 @@ def run(opt_defines=[], opt_directory=None, opt_c_fill=None,
     if opt_datastream:
         f = generator_stream.CodeFactory(
             { 'little' : generator_stream.LITTLE_ENDIAN,
-              'big'    : generator_stream.BIG_ENDIAN }[opt_endianess])
+              'big'    : generator_stream.BIG_ENDIAN }[opt_endianess],
+            False)
 
         if isinstance(opt_datastream, io.TextIOBase):
             # when '-' is used, argparse will return sys.stdout;
@@ -76,6 +77,21 @@ def run(opt_defines=[], opt_directory=None, opt_c_fill=None,
             s = open(opt_datastream.fileno(), "wb", closefd = False)
         else:
             s = opt_datastream
+
+        generators.append([s, generator.CodeGenerator(f)])
+
+    if opt_datastream_c:
+        f = generator_stream.CodeFactory(
+            { 'little' : generator_stream.LITTLE_ENDIAN,
+              'big'    : generator_stream.BIG_ENDIAN }[opt_endianess],
+            True)
+
+        if isinstance(opt_datastream, io.TextIOBase):
+            # when '-' is used, argparse will return sys.stdout;
+            # convert it into a raw stream in this case
+            s = open(opt_datastream.fileno(), "wb", closefd = False)
+        else:
+            s = opt_datastream_c
 
         generators.append([s, generator.CodeGenerator(f)])
 
@@ -122,6 +138,10 @@ if __name__ == '__main__':
                         type = argparse.FileType('bw', encoding = None),
                         help='output raw datastream',
                         dest='opt_datastream', default = None)
+    parser.add_argument('--datastream-c', metavar='<file>',
+                        type = argparse.FileType('bw', encoding = None),
+                        help='output raw datastream as C source',
+                        dest='opt_datastream_c', default = None)
     parser.add_argument('--endian', metavar='big|little',
                         help='endianess of raw datastream',
                         choices = ['little', 'big'],

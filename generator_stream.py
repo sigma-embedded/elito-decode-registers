@@ -44,7 +44,7 @@ def _create_int_fmt(width, is_signed, endian):
 
 class CodeFactory(generator.CodeFactory):
     class _Int(generator.CodeObject):
-        def __init__(self, v, width, is_signed, endian):
+        def __init__(self, v, width, is_signed, endian, xform):
             generator.CodeObject.__init__(self, None)
 
             if isinstance(v, generator.Symbol):
@@ -52,12 +52,13 @@ class CodeFactory(generator.CodeFactory):
 
             self.__fmt = _create_int_fmt(width, is_signed, endian)
             self.__v   = v
+            self.__xform = xform
 
         def emit(self, lvl = 0, print_comment = True):
-            return struct.pack(self.__fmt, self.__v)
+            return self.__xform(struct.pack(self.__fmt, self.__v))
 
     class _String(generator.CodeObject):
-        def __init__(self, v, endian):
+        def __init__(self, v, endian, xform):
             generator.CodeObject.__init__(self, None)
 
             if isinstance(v, generator.Symbol):
@@ -65,10 +66,11 @@ class CodeFactory(generator.CodeFactory):
 
             self.__fmt = endian.fmt + 'H'
             self.__v   = v
+            self.__xform = xform
 
         def emit(self, lvl = 0, print_comment = True):
-            return (struct.pack(self.__fmt, len(self.__v)) +
-                    self.__v.encode('ascii'))
+            return (self.__xform(struct.pack(self.__fmt, len(self.__v)) +
+                                 self.__v.encode('ascii')))
 
     class _Comment(generator.CodeObject):
         def __init__(self):
@@ -77,15 +79,26 @@ class CodeFactory(generator.CodeFactory):
         def emit(self, lvl = 0, print_comment = True):
             return b''
 
-    def __init__(self, endian):
+    def __init__(self, endian, c_array = False):
         assert(isinstance(endian, Endianess))
         self.__endian = endian
 
+        if c_array:
+            self.__xform = self.__xform_c_array
+        else:
+            self.__xform = lambda x: x
+
+    def __xform_c_array(self, val):
+        if len(val) == 0:
+            return ''
+
+        return b', '.join(map(lambda x: b'0x%02x' % x, val)) + b',\n'
+
     def _add_int(self, v, comment, width, is_signed, fmt = None):
-        return CodeFactory._Int(v, width, is_signed, self.__endian)
+        return CodeFactory._Int(v, width, is_signed, self.__endian, self.__xform)
 
     def add_string(self, s, comment):
-        return CodeFactory._String(s, self.__endian)
+        return CodeFactory._String(s, self.__endian, self.__xform)
 
     def add_comment(self, comment):
         return CodeFactory._Comment()
