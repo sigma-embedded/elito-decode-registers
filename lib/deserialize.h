@@ -130,4 +130,12 @@ bool deserialize_cpu_units(struct cpu_unit **unit, size_t *cnt,
 bool deserialize_decode(struct cpu_unit const units[], size_t unit_cnt,
 			uintptr_t addr, uintmax_t val, void *priv);
 
+int deserialize_decode_range(struct cpu_unit const units[], size_t unit_cnt,
+			     uintptr_t start_addr, uintptr_t end_addr,
+			     void (*print_fn)(struct cpu_register const *reg,
+					      uintmax_t val, void *priv),
+			     int (*read_fn)(uintptr_t addr, unsigned int num_bits,
+					    uintmax_t *val, void *priv),
+			     void *priv);
+
 #endif	/* H_ELITO_DECODER_DESERIALIZER_H */
