@@ -604,7 +604,7 @@ class Register(block.Block, block.Mergeable):
                 self.o._set_template(True)
             elif tag == '@addr':
                 if len(l) == 2:
-                    self.o._set_address(int(l[1],0), 32)
+                    self.o._set_address(int(l[1],0), self.o.get_regwidth())
                 elif len(l) == 3:
                     self.o._set_address(int(l[1],0), int(l[2]))
                 else:
@@ -646,6 +646,9 @@ class Register(block.Block, block.Mergeable):
                                             self.__offs,
                                             self.__width)
 
+    def get_regwidth(self):
+        return self.__unit.get_regwidth()
+    
     def assign_af(self, num, fn, field):
         if not isinstance(self.__pin, _NoPin):
             self.__pin.add(num, fn, field)

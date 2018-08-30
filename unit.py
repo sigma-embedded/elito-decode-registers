@@ -65,6 +65,7 @@ class Unit(block.Block, block.Mergeable):
                 '@disabled' : 0,
                 '@name' : 1,
                 '@reg' : 2,
+                '@regwidth' : 1,
             }
 
             return self._validate_ranges(l, ARG_RANGES)
@@ -86,6 +87,8 @@ class Unit(block.Block, block.Mergeable):
                 self.o._assign_name(l[1])
             elif tag == '@reg':
                 self.o._assign_memory(int(l[1], 0), int(l[2], 0))
+            elif tag == '@regwidth':
+                self.o._assign_regwidth(int(l[1]))
             else:
                 assert(False)
 
@@ -109,6 +112,7 @@ class Unit(block.Block, block.Mergeable):
         self.__directory = None
         self.__is_enabled = True
         self.__memory = None
+        self.__regwidth = None
         self.bga = top.bga
 
     @staticmethod
@@ -124,6 +128,9 @@ class Unit(block.Block, block.Mergeable):
     def _assign_name(self, name):
         self.__name = name
 
+    def _assign_regwidth(self, width):
+        self.__regwidth = width
+        
     def _assign_memory(self, addr, len):
         self.__memory = [addr, len]
 
@@ -218,3 +225,6 @@ class Unit(block.Block, block.Mergeable):
 
     def get_address(self):
         return self.__memory[0]
+
+    def get_regwidth(self):
+        return self.__regwidth or 32
