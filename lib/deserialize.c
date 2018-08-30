@@ -677,3 +677,49 @@ bool deserialize_decode(struct cpu_unit const units[], size_t unit_cnt,
 
 	return found;
 }
+
+static bool is_in_range(uintptr_t start, uintptr_t end, uintptr_t v)
+{
+	return (start <= v && v <= end);
+}
+
+int deserialize_decode_range(struct cpu_unit const units[], size_t unit_cnt,
+			     uintptr_t start_addr, uintptr_t end_addr,
+			     int (*read_fn)(uintptr_t addr, uintmax_t *val, void *priv),
+			     void *priv)
+{
+	int	rc;
+
+	if (start_addr >= end_addr)
+		return 0;
+
+	for (size_t i = 0; i < unit_cnt; ++i) {
+		struct cpu_unit const	*unit = &units[i];
+		uintptr_t		base = unit->start;
+
+		if (!is_in_range(start_addr, end_addr, base))
+			continue;
+
+		for (size_t j = 0; j < unit->num_registers; ++j) {
+			struct cpu_register const	*reg = &unit->registers[j];
+			uintptr_t			rel_addr;
+			uintmax_t			val;
+
+			rel_addr = base + reg->offset;
+
+			if (!is_in_range(start_addr, end_addr, rel_addr))
+				continue;
+
+			rc = read_fn(rel_addr, &val, priv);
+			if (rc < 0)
+				break;
+
+			deserialize_decode_reg(reg, val, priv);
+		}
+
+		if (rc < 0)
+			break;
+	}
+
+	return rc;
+}
