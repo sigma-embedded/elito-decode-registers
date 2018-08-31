@@ -129,6 +129,9 @@ inline static size_t deserialize_get_sz(void const *start, size_t len,
 bool deserialize_cpu_units(struct cpu_unit **unit, size_t *cnt,
 			   void const **buf, size_t *sz);
 
+void deserialize_decode_reg(struct cpu_register const *reg,
+			    uintmax_t val, void *priv);
+
 bool deserialize_decode(struct cpu_unit const units[], size_t unit_cnt,
 			uintptr_t addr, uintmax_t val, void *priv);
 
