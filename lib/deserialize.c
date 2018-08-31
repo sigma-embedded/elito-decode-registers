@@ -477,8 +477,10 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 	struct string		id;
 	struct string		name;
 	uint8_t			type;
+	uintmax_t		reg_flags;
 
-	if (!pop_string(&id, buf, sz) ||
+	if (!pop_uint_var(&reg_flags, 2, buf, sz) ||
+	    !pop_string(&id, buf, sz) ||
 	    !pop_string(&name, buf, sz) ||
 	    !pop_u8(&type, buf, sz))
 		return false;
@@ -556,6 +558,7 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 		return false;
 	}
 
+	(*field)->flags = reg_flags;
 	(*field)->id = id;
 	(*field)->name = name;
 
@@ -567,13 +570,17 @@ static bool pop_cpu_register(struct cpu_register *reg,
 {
 	size_t				num_fields;
 	struct cpu_regfield const	**fields;
+	uintmax_t			reg_flags;
 
 	if (!pop_uintptr_t(&reg->offset, buf, sz) ||
 	    !pop_u8(&reg->width, buf, sz) ||
+	    !pop_uint_var(&reg_flags, 2, buf, sz) ||
 	    !pop_string(&reg->id, buf, sz) ||
 	    !pop_string(&reg->name, buf,sz) ||
 	    !pop_size_t(&num_fields, buf, sz))
 		return false;
+
+	reg->flags = reg_flags;
 
 	fields = deserialize_calloc(num_fields, sizeof fields[0]);
 	if (!fields && num_fields > 0)

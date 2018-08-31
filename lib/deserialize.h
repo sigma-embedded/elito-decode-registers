@@ -47,6 +47,7 @@ struct cpu_unit {
 struct cpu_register {
 	uintptr_t			offset;
 	unsigned char			width;
+	uint8_t				flags;
 
 	struct string			id;
 	struct string			name;
@@ -62,6 +63,7 @@ struct cpu_regfield {
 	struct string			name;
 	struct cpu_register const	*reg;
 	deserialize_decoder_fn		fn;
+	uint8_t				flags;
 };
 
 struct cpu_regfield_bool {

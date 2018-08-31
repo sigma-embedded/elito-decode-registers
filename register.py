@@ -28,6 +28,24 @@ import pin
 class _NoPin:
     pass
 
+class Flags:
+    def __init__(self, dflt = None):
+        self.__v = None
+        self.__dflt = dflt
+
+    def set(self, val, msk):
+        if self.__v == None:
+            self.__v = val
+        else:
+            self.__v &= ~msk
+            self.__v |= val
+
+    def get(self):
+        if self.__v == None:
+            return self.__dflt
+        else:
+            return self.__v
+
 class Top(block.Top):
     class __Parser(block.Parser):
         def __init__(self, obj):
@@ -174,6 +192,10 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
     TYPE_RESERVED	= 6
 
+    ACCESS_READ		= 0x01
+    ACCESS_WRITE	= 0x02
+    ACCESS_msk		= (ACCESS_READ | ACCESS_WRITE)
+    
     class BitField:
         def __init__(self, bits = None):
             self.__v = None
@@ -253,6 +275,13 @@ class Field(block.Block, block.Mergeable, block.Removable):
                 '@sint' : 1,
                 '@signed' : 1,
                 '@reserved' : 0,
+
+                "@ro" : 0,
+                "@read-only" : 0,
+                "@rw" : 1,
+                "@read-write" : 1,
+                "@wo" : 1,
+                "@write-only" : 1,
             }
 
             return self._validate_ranges(l, ARG_RANGES)
@@ -290,6 +319,12 @@ class Field(block.Block, block.Mergeable, block.Removable):
                 self.o._set_type(Field.TYPE_RESERVED)
             elif tag == '@bits':
                 self.o._set_bits(l[1:])
+            elif tag in ['@ro', '@read-only']:
+                self.o._set_flags(Field.ACCESS_READ, Field.ACCESS_msk)
+            elif tag in ['@rw', '@read-write']:
+                self.o._set_flags(Field.ACCESS_READ | Field.ACCESS_WRITE, ACCESS_msk)
+            elif tag in ['@wo', '@write-only']:
+                self.o._set_flags(Field.ACCESS_READ | Field.ACCESS_WRITE, ACCESS_msk)
             else:
                 assert(False)
 
@@ -312,6 +347,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         self.__bits = self.BitField()
         self.__desc = None
         self.__frac = None
+        self.__flags = Flags(self.ACCESS_READ | self.ACCESS_WRITE)
 
     def _assign_description(self, desc):
         self.__desc = desc
@@ -383,6 +419,12 @@ class Field(block.Block, block.Mergeable, block.Removable):
                           (all or not x.is_removed()))
         return block.Mergeable.create_container(tmp, lambda x: x.get_value())
 
+    def _set_flags(self, val, msk):
+        self.__flags.set(val, msk)
+
+    def get_flags(self):
+        return self.__flags.get()
+    
     def __update_enums(self, other):
         self_enums  = self.get_enums(True)
         other_enums = other.get_enums()
@@ -547,6 +589,12 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
         code = top.create_block('%s field' % self.__id)
 
+        code.add_symbol(generator.Symbol("FIELD_FLAG_ACCESS_READ",
+                                         Field.ACCESS_READ, "read access"))
+        code.add_symbol(generator.Symbol("FIELD_FLAG_ACCESS_WRITE",
+                                         Field.ACCESS_WRITE, "write access"))
+        
+        code.add_uint_var(self.get_flags(), 2, "flags")
         code.add_string(self.get_id(), "id")
         code.add_string(self.get_name(), "name")
 
@@ -572,6 +620,10 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
 
 class Register(block.Block, block.Mergeable):
+    ACCESS_READ		= 0x01
+    ACCESS_WRITE	= 0x02
+    ACCESS_msk		= (ACCESS_READ | ACCESS_WRITE)
+    
     class __Parser(block.Parser):
         def __init__(self, obj):
             super().__init__(obj)
@@ -582,6 +634,13 @@ class Register(block.Block, block.Mergeable):
                 '@template' : 0,
                 '@addr' : [1, 2],
                 "@pin" : 1,
+
+                "@ro" : 0,
+                "@read-only" : 0,
+                "@rw" : 1,
+                "@read-write" : 1,
+                "@wo" : 1,
+                "@write-only" : 1,
             }
 
             return self._validate_ranges(l, ARG_RANGES)
@@ -611,6 +670,12 @@ class Register(block.Block, block.Mergeable):
                     raise Exception("Invalid address '%s'" % l)
             elif tag == "@pin":
                 self.o._set_pins(l[1])
+            elif tag in ['@ro', '@read-only']:
+                self.o._set_flags(Register.ACCESS_READ, Register.ACCESS_msk)
+            elif tag in ['@rw', '@read-write']:
+                self.o._set_flags(Register.ACCESS_READ | Register.ACCESS_WRITE, ACCESS_msk)
+            elif tag in ['@wo', '@write-only']:
+                self.o._set_flags(Register.ACCESS_READ | Register.ACCESS_WRITE, ACCESS_msk)
             else:
                 res = None
 
@@ -638,6 +703,7 @@ class Register(block.Block, block.Mergeable):
 
         self.__fields = {}
         self.__pin = None
+        self.__flags = Flags(self.ACCESS_READ | self.ACCESS_WRITE)
 
     def __str__(self):
         return "REG %s (%s@%s, %08x/%d)" % (self.__id,
@@ -722,6 +788,12 @@ class Register(block.Block, block.Mergeable):
         else:
             return self.get_id(False)
 
+    def _set_flags(self, val, msk):
+        self.__flags.set(val, msk)
+
+    def get_flags(self):
+        return self.__flags.get()
+
     def _merge(self, reg):
         assert(isinstance(reg, Register))
         #print("Register: merging %s into %s" % (reg.get_id(), self.get_id()))
@@ -760,8 +832,14 @@ class Register(block.Block, block.Mergeable):
         code = block.create_block('%s register' % self.__id)
         code.add_x32(self.__offs,  "offset")
         code.add_u8(self.__width, "width", "%u")
+        code.add_uint_var(self.get_flags(), 2, "flags")
         code.add_string(self.get_id(), "id")
         code.add_string(self.get_name(), "name")
+
+        code.add_symbol(generator.Symbol("REGISTER_FLAG_ACCESS_READ",
+                                         Register.ACCESS_READ, "read access"))
+        code.add_symbol(generator.Symbol("REGISTER_FLAG_ACCESS_WRITE",
+                                         Register.ACCESS_WRITE, "write access"))
 
         all_fields = list(self.__fields.values())
 
