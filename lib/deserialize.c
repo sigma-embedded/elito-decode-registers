@@ -692,8 +692,8 @@ static bool is_in_range(uintptr_t start, uintptr_t end, uintptr_t v)
 
 int deserialize_decode_range(struct cpu_unit const units[], size_t unit_cnt,
 			     uintptr_t start_addr, uintptr_t end_addr,
-			     void (*print_fn)(struct cpu_register const *reg, uintmax_t val, void *priv),
-			     int (*read_fn)(uintptr_t addr, unsigned int width, uintmax_t *val, void *priv),
+			     int (*decode_fn)(struct cpu_register const *reg,
+					      void *priv),
 			     void *priv)
 {
 	int	rc;
@@ -712,21 +712,16 @@ int deserialize_decode_range(struct cpu_unit const units[], size_t unit_cnt,
 
 		for (size_t j = 0; j < unit->num_registers; ++j) {
 			struct cpu_register const	*reg = &unit->registers[j];
-			uintptr_t			rel_addr;
-			uintmax_t			val;
+			uintptr_t			abs_addr;
 
-			rel_addr = base + reg->offset;
+			abs_addr = base + reg->offset;
 
-			if (!is_in_range(start_addr, end_addr, rel_addr))
+			if (!is_in_range(start_addr, end_addr, abs_addr))
 				continue;
 
-			rc = read_fn(rel_addr, reg->width, &val, priv);
+			rc = decode_fn(reg, priv);
 			if (rc < 0)
 				break;
-
-			print_fn(reg, val, priv);
-			deserialize_decode_reg(reg, val, priv);
-			print_fn(NULL, 0, priv);
 		}
 
 		if (rc < 0)
