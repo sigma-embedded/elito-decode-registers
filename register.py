@@ -278,10 +278,10 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
                 "@ro" : 0,
                 "@read-only" : 0,
-                "@rw" : 1,
-                "@read-write" : 1,
-                "@wo" : 1,
-                "@write-only" : 1,
+                "@rw" : 0,
+                "@read-write" : 0,
+                "@wo" : 0,
+                "@write-only" : 0,
             }
 
             return self._validate_ranges(l, ARG_RANGES)
@@ -322,9 +322,9 @@ class Field(block.Block, block.Mergeable, block.Removable):
             elif tag in ['@ro', '@read-only']:
                 self.o._set_flags(Field.ACCESS_READ, Field.ACCESS_msk)
             elif tag in ['@rw', '@read-write']:
-                self.o._set_flags(Field.ACCESS_READ | Field.ACCESS_WRITE, ACCESS_msk)
+                self.o._set_flags(Field.ACCESS_READ | Field.ACCESS_WRITE, Field.ACCESS_msk)
             elif tag in ['@wo', '@write-only']:
-                self.o._set_flags(Field.ACCESS_READ | Field.ACCESS_WRITE, ACCESS_msk)
+                self.o._set_flags(Field.ACCESS_READ | Field.ACCESS_WRITE, Field.ACCESS_msk)
             else:
                 assert(False)
 
@@ -637,10 +637,10 @@ class Register(block.Block, block.Mergeable):
 
                 "@ro" : 0,
                 "@read-only" : 0,
-                "@rw" : 1,
-                "@read-write" : 1,
-                "@wo" : 1,
-                "@write-only" : 1,
+                "@rw" : 0,
+                "@read-write" : 0,
+                "@wo" : 0,
+                "@write-only" : 0,
             }
 
             return self._validate_ranges(l, ARG_RANGES)
@@ -673,9 +673,9 @@ class Register(block.Block, block.Mergeable):
             elif tag in ['@ro', '@read-only']:
                 self.o._set_flags(Register.ACCESS_READ, Register.ACCESS_msk)
             elif tag in ['@rw', '@read-write']:
-                self.o._set_flags(Register.ACCESS_READ | Register.ACCESS_WRITE, ACCESS_msk)
+                self.o._set_flags(Register.ACCESS_READ | Register.ACCESS_WRITE, Register.ACCESS_msk)
             elif tag in ['@wo', '@write-only']:
-                self.o._set_flags(Register.ACCESS_READ | Register.ACCESS_WRITE, ACCESS_msk)
+                self.o._set_flags(Register.ACCESS_READ | Register.ACCESS_WRITE, Register.ACCESS_msk)
             else:
                 res = None
 
