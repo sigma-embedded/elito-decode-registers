@@ -10,7 +10,146 @@
     @enum 0 "ecspi1"
     @enum 1 "i2c3"
 
+@register GPR1
+  @addr 0x0004
+  @field ACT_CS0
+    @boolean 0
+  @field ADDRS0
+    @bits 2-1
+    @enum 0 "32 MiB"
+    @enum 1 "64 MiB"
+    @enum 2 "128 MiB"
+
+  @field ACT_CS1
+    @boolean 3
+  @field ADDRS1
+    @bits 5-4
+    @enum 0 "32 MiB"
+    @enum 1 "64 MiB"
+    @enum 2 "128 MiB"
+  @field ACT_CS2
+    @boolean 6
+  @field ADDRS2
+    @bits 8-7
+    @enum 0 "32 MiB"
+    @enum 1 "64 MiB"
+    @enum 2 "128 MiB"
+  @field ACT_CS3
+    @boolean 9
+  @field ADDRS3
+    @bits 11-10
+    @enum 0 "32 MiB"
+    @enum 1 "64 MiB"
+    @enum 2 "128 MiB"
+  @field GINT
+    @boolean 12
+  @field USB_OTG_ID_SEL
+    @bits 13
+    @enum 0 "ENET_RX_ER"
+    @enum 1 "GPIO_1"
+  @field SYS_INT
+    @boolean 14
+  @field USB_EXP_MODE
+    @boolean 15
+  @field REF_SSP_EN
+    @boolean 16
+  @field IPU_VPU_MUX
+    @boolean 17
+  @field TEST_POWERDOWN
+    @boolean 18
+  @field MIPI_IPU1_MUX
+    @bits 19
+    @enum 0 "IPU1 CSI0 MIPI vc0"
+    @enum 1 "IPU1 CSI0 parallel"
+  @field MIPI_IPU2_MUX
+    @bits 20
+    @enum 0 "IPU2 CSI1 MIPI vc3"
+    @enum 1 "IPU2 CSI1 parallel"
+  @field ENET_CLK_SEL
+    @bits 21
+    @enum 0 "pad"
+    @enum 1 "internal clock"
+  @field EXC_MON
+    @boolean 22
+  @field MIPI_DPI_OFF
+    @boolean 24
+  @field MIPI_COLOR_SW
+    @boolean 25
+  @field APP_REQ_ENTR_L1
+    @boolean 26
+  @field APP_READY_ENTR_L23
+    @boolean 27
+  @field APP_REQ_EXIT_L1
+    @boolean 28
+  @field APP_CLK_REQ_N
+    @boolean 30
+  @field CFG_L1_CLK_REMOVAL_EN
+    @boolean 31
+
   #TODO: complete me!
+
+@register GPR3
+  @addr 0x000c
+  @field HDMI_MUX_CTL
+    @description "HDMI source"
+    @bits 3-2
+    @enum 0 "IPU1 DI0"
+    @enum 1 "IPU1 DI1"
+    @enum 2 "IPU2 DI0"
+    @enum 3 "IPU2 DI1"
+  @field MIPI_MUX_CTL
+    @description "MIPI source"
+    @bits 5-4
+    @enum 0 "IPU1 DI0"
+    @enum 1 "IPU1 DI1"
+    @enum 2 "IPU2 DI0"
+    @enum 3 "IPU2 DI1"
+  @field LVDS0_MUX_CTL
+    @description "LVDS0 source"
+    @bits 7-6
+    @enum 0 "IPU1 DI0"
+    @enum 1 "IPU1 DI1"
+    @enum 2 "IPU2 DI0"
+    @enum 3 "IPU2 DI1"
+  @field LVDS1_MUX_CTL
+    @description "LVDS1 source"
+    @bits 7-6
+    @enum 0 "IPU1 DI0"
+    @enum 1 "IPU1 DI1"
+    @enum 2 "IPU2 DI0"
+    @enum 3 "IPU2 DI1"
+  @field IPU_DIAG
+    @boolean 10
+  @field TZASC1_BOOT_LOCK
+    @boolean 11
+  @field TZASC2_BOOT_LOCK
+    @boolean 12
+  @field CORE0_DBG_ACK_EN
+    @boolean 13
+  @field CORE1_DBG_ACK_EN
+    @boolean 14
+  @field CORE2_DBG_ACK_EN
+    @boolean 15
+  @field CORE3_DBG_ACK_EN
+    @boolean 16
+  @field OCRAM_STATUS
+    @read-only
+    @uint 20-17
+  @field OCRAM_CTL
+    @uint 24-21
+  @field uSDHCx_RD_CACHE_CTL
+    @boolean 25
+  @field uSDHCx_WR_CACHE_CTL
+    @boolean 26
+  @field BCH_RD_CACHE_CTL
+    @boolean 27
+  @field BCH_WR_CACHE_CTL
+    @boolean 28
+  @field GPU_DBG
+    @bits 3-20
+    @enum 0 "GPU3D"
+    @enum 1 "GPU2D"
+    @enum 2 "OpenVG"
 
 @register GPR4
   @addr 0x0010
