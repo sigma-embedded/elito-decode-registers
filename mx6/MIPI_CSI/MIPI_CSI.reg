@@ -1,0 +1,189 @@
+@register VERSION
+  @addr 0x00
+  @field VERSION
+    @uint 31-0
+
+@register N_LANES
+  @addr 0x4
+  @field N_LANES
+    @uint 1-0
+
+@register PHY_SHUTDOWNZ
+  @addr 0x8
+  @field PHY_SHUTDOWNZ
+    @boolean 0
+
+@register DPHY_RSTZ
+  @addr 0xc
+  @field DPHY_RSTZ
+    @boolean 0
+
+@register CSI2_RESETN
+  @addr 0x10
+  @field CSI2_RESETN
+    @boolean 0
+
+@register PHY_STATE
+  @addr 0x14
+  @field phy_rxulpsesc_0
+    @boolean 0
+    @read-only
+  @field phy_rxulpsesc_1
+    @boolean 1
+    @read-only
+  @field phy_rxulpsesc_2
+    @boolean 2
+    @read-only
+  @field phy_rxulpsesc_4
+    @boolean 3
+    @read-only
+  @field phy_stopstatedata_0
+    @boolean 4
+    @read-only
+  @field phy_stopstatedata_1
+    @boolean 5
+    @read-only
+  @field phy_stopstatedata_2
+    @boolean 6
+    @read-only
+  @field phy_stopstatedata_3
+    @boolean 7
+    @read-only
+  @field phy_rxclkactivehs
+    @boolean 8
+    @read-only
+  @field phy_rxulpsclknot
+    @boolean 9
+    @read-only
+  @field phy_stopstateclk
+    @boolean 10
+    @read-only
+  @field bypass_2ecc_tst
+    @boolean 11
+
+@register DATA_IDS_1
+  @addr 0x18
+  @field di0_dt
+    @uint 5-0
+  @field di0_vc
+    @uint 7-6
+  @field di1_dt
+    @uint 13-8
+  @field di1_vc
+    @uint 15-14
+  @field di2_dt
+    @uint 21-16
+  @field di2_vc
+    @uint 23-22
+  @field di3_dt
+    @uint 29-24
+  @field di3_vc
+    @uint 31-30
+
+@register DATA_IDS_2
+  @addr 0x1c
+  @field di4_dt
+    @uint 5-0
+  @field di4_vc
+    @uint 7-6
+  @field di5_dt
+    @uint 13-8
+  @field di5_vc
+    @uint 15-14
+  @field di6_dt
+    @uint 21-16
+  @field di6_vc
+    @uint 23-22
+  @field di7_dt
+    @uint 29-24
+  @field di7_vc
+    @uint 31-30
+
+@register ERR1
+  @addr 0x20
+  @read-only
+  @field phy_errsotsynchs_0
+    @boolean 0
+  @field phy_errsotsynchs_1
+    @boolean 1
+  @field phy_errsotsynchs_2
+    @boolean 2
+  @field phy_errsotsynchs_3
+    @boolean 3
+  @field err_f_bndry_match_vc0
+    @boolean 4
+  @field err_f_bndry_match_vc1
+    @boolean 5
+  @field err_f_bndry_match_vc2
+    @boolean 6
+  @field err_f_bndry_match_vc3
+    @boolean 7
+  @field err_f_seq_vc0
+    @boolean 8
+  @field err_f_seq_vc1
+    @boolean 9
+  @field err_f_seq_vc2
+    @boolean 10
+  @field err_f_seq_vc3
+    @boolean 11
+  @field err_frame_data_vc0
+    @boolean 12
+  @field err_frame_data_vc1
+    @boolean 13
+  @field err_frame_data_vc2
+    @boolean 14
+  @field err_frame_data_vc3
+    @boolean 15
+  @field err_l_bndry_match_di0
+    @boolean 16
+  @field err_l_bndry_match_di1
+    @boolean 17
+  @field err_l_bndry_match_di2
+    @boolean 18
+  @field err_l_bndry_match_di3
+    @boolean 19
+  @field err_l_seq_di0
+    @boolean 20
+  @field err_l_seq_di1
+    @boolean 21
+  @field err_l_seq_di2
+    @boolean 22
+  @field err_l_seq_di3
+    @boolean 23
+  @field vc0_err_crc
+    @boolean 24
+  @field vc1_err_crc
+    @boolean 25
+  @field vc2_err_crc
+    @boolean 26
+  @field vc3_err_crc
+    @boolean 27
+  @field err_ecc_double
+    @boolean 28
+    
+@register ERR2
+  @addr 0x24
+
+@register MASK1
+  @use ERR1
+  @addr 0x28
+  
+@register MASK2
+  @use ERR2
+  @addr 0x28
+
+@register PHY_TST_CTRL0
+  @addr 0x30
+  @field phy_testclr
+    @boolean 0
+  @field phy_testclk
+    @boolean 1
+
+@register PHY_TST_CTRL1
+  @addr 0x34
+  @field phy_testdin
+    @uint 7-0
+  @field phy_testdout
+    @uint 15-8
+  @field phy_testen
+    @boolean 16

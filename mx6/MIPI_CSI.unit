@@ -1,0 +1,3 @@
+@unit MIPI_CSI
+  @registers MIPI_CSI/
+  @reg 0x021dc000 0x100
