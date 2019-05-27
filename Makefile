@@ -18,11 +18,16 @@ py_DATA = \
 	unit.py \
 
 ch_DATA = \
+	lib/common.c \
+	lib/common.h \
 	lib/deserialize.c \
 	lib/deserialize.h \
+	lib/decode-devmem.c \
+	lib/decode-i2c.c \
 
 mk_DATA = \
-	lib/cpudef.m4
+	lib/cpudef.m4 \
+	lib/build.mk \
 
 prefix ?= /usr/local
 bindir ?= ${prefix}/bin
