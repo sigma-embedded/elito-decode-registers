@@ -5,3 +5,25 @@ build:
   - make clean
   - make install DESTDIR=/tmp/decode-install
   - make clean
+
+.downstream-trigger: &downstream_trigger
+  allow_failure: true
+  only:
+    - master
+  script:
+    - |
+      curl -fsS --request POST \
+      -F "token=${X_CI_TRIGGER_TOKEN}" \
+      -F "ref=${CI_COMMIT_REF_NAME}" \
+      -F "variables[X_CI_UPSTREAM_REF]=${CI_COMMIT_SHA}" \
+      -F "variables[X_CI_UPSTREAM_URI]=${CI_PROJECT_URL}" \
+      ${CI_API_V4_URL}/projects/${X_CI_DOWNSTREAM_ID}/trigger/pipeline
+    - echo
+
+test-downstream:
+  <<: *downstream_trigger
+  variables:
+    GIT_STRATEGY: none
+    GIT_SUBMODULE_STRATEGY: none
+    X_CI_DOWNSTREAM_ID: ${X_CI_DOWNSTREAM_ID_DEFS}
+    X_CI_TRIGGER_TOKEN: ${X_CI_TRIGGER_TOKEN_DEFS}
