@@ -4,18 +4,18 @@ bin_SCRIPTS = \
 	decode-registers-gendesc
 
 py_DATA = \
-	bga.py \
-	block.py \
-	generator.py \
-	generator_cbga.py \
-	generator_ccommon.py \
-	generator_cdef.py \
-	generator_cfill.py \
-	generator_stream.py \
-	line.py \
-	pin.py \
-	register.py \
-	unit.py \
+	src/bga.py \
+	src/block.py \
+	src/generator.py \
+	src/generator_cbga.py \
+	src/generator_ccommon.py \
+	src/generator_cdef.py \
+	src/generator_cfill.py \
+	src/generator_stream.py \
+	src/line.py \
+	src/pin.py \
+	src/register.py \
+	src/unit.py \
 
 ch_DATA = \
 	lib/common.c \
@@ -53,7 +53,7 @@ clean:	.subdir-clean
 	rm -f *.pyc
 	rm -f decode-registers-gendesc
 
-decode-registers-gendesc:	gendesc Makefile
+decode-registers-gendesc:	src/gendesc Makefile
 	@rm -f $@
 	$(SED) -e 's!@PYDIR@!$(pydir)!g' $< >$@
 	chmod a-r,a+rx $@

@@ -47,7 +47,7 @@ test-deserialize:	${test-deserialize_SOURCES} test-deserialize_symbols.h test-de
 %_symbols.h %_fill.c %_stream.bin:	.gendesc-%.stamp
 	@:
 
-.gendesc-%.stamp:	../gendesc Makefile
+.gendesc-%.stamp:	../src/gendesc Makefile
 	rm -f $*_*.tmp $*_symbols.h $*_fill.c $*_stream.bin
 	$(PYTHON3) $< --c-defines $*_symbols.h.tmp --c-fill $*_fill.c.tmp --datastream $*_stream.bin.tmp ${TEST_$*_DEFS}
 	mv $*_symbols.h.tmp $*_symbols.h
