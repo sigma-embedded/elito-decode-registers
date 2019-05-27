@@ -34,6 +34,13 @@ endef
 
 all:	${test_PROGRAMS}
 
+clean:
+	rm -f ${test_PROGRAMS}
+	rm -f *.bin *.tmp
+	rm -f ${addsuffix _fill.c,${test_PROGRAMS}}
+	rm -f ${addsuffix _stream.h,${test_PROGRAMS}}
+	rm -f ${addsuffix _symbols.h,${test_PROGRAMS}}
+
 test-deserialize:	${test-deserialize_SOURCES} test-deserialize_symbols.h test-deserialize_stream.h
 	$(call build_sym)
 
