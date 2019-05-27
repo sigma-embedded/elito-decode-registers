@@ -1,3 +1,0 @@
-@unit CCM
-  @reg 0x020c4000 0x4000
-  @registers CCM/

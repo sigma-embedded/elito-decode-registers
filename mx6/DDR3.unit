@@ -1,3 +1,0 @@
-@unit DDR3_RAM
-  @registers DDR3/
-  @reg 0xffff0000 0x10000
