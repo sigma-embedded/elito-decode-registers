@@ -37,7 +37,13 @@ pydir ?= ${pkgdatadir}/py
 chdir ?= ${pkgdatadir}/c
 mkdir ?= ${pkgdatadir}/mk
 
-SED = sed
+
+PYTHON3 ?=	/usr/bin/python3
+SED = 		sed
+
+SED_CMD = \
+	-e 's!@PYDIR@!$(pydir)!g' \
+	-e '1s,^\(\#! *\)/usr/bin/python3,\1${PYTHON3},' \
 
 INSTALL = install
 INSTALL_BIN = ${INSTALL} -p -m 0755
@@ -55,7 +61,7 @@ clean:	.subdir-clean
 
 decode-registers-gendesc:	src/gendesc Makefile
 	@rm -f $@
-	$(SED) -e 's!@PYDIR@!$(pydir)!g' $< >$@
+	$(SED) ${SED_CMD} $< >$@
 	chmod a-r,a+rx $@
 
 install:	.install-py .install-bin .install-ch .install-mk
