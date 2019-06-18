@@ -693,7 +693,7 @@ int deserialize_decode_range(struct cpu_unit const units[], size_t unit_cnt,
 {
 	int	rc;
 
-	if (start_addr >= end_addr)
+	if (start_addr > end_addr)
 		return 0;
 
 	rc = 0;

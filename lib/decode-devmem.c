@@ -24,6 +24,8 @@ struct decode_info {
 	size_t			page_sz;
 	uintptr_t		last_addr;
 	struct cpu_unit const	*last_unit;
+
+	uintmax_t		value;
 };
 
 static int _mem_read(uintptr_t addr, unsigned int width, uintmax_t *val,
@@ -91,9 +93,13 @@ static int _decode_reg(struct cpu_register const *reg, void *priv_)
 	uintmax_t		val;
 	int			rc;
 
-	rc = _mem_read(addr, reg->width, &val, priv);
-	if (rc < 0)
-		return rc;
+	if (priv->fd < 0) {
+		val = priv->value;
+	} else {
+		rc = _mem_read(addr, reg->width, &val, priv);
+		if (rc < 0)
+			return rc;
+	}
 
 	if (reg->unit !=  priv->last_unit)
 		col_printf("\n======================== %" STR_FMT " ==============================\n\n",
@@ -125,6 +131,8 @@ int main(int argc, char *argv[])
 	uintptr_t	addr_start = 0;
 	uintptr_t	addr_end = ~((uintptr_t)0);
 
+	bool		do_decode_single = false;
+
 	int		fd;
 	int		rc;
 
@@ -133,15 +141,14 @@ int main(int argc, char *argv[])
 		.page_sz	= sysconf(_SC_PAGESIZE),
 	};
 
-	fd = open("/dev/mem", O_RDONLY);
-	if (fd < 0) {
-		perror("open(/dev/mem");
-		return EX_OSERR;
+	if (argc >= 2) {
+		char const	*addr = argv[1];
+		if (addr[0] == '?') {
+			do_decode_single = true;
+			++addr;
+		}
+		addr_start = strtoul(addr, NULL, 0);
 	}
-	info.fd = fd;
-
-	if (argc >= 2)
-		addr_start = strtoul(argv[1], NULL, 0);
 
 	if (argc >= 3)
 		addr_end = strtoul(argv[2], NULL, 0);
@@ -151,10 +158,25 @@ int main(int argc, char *argv[])
 		return EX_SOFTWARE;
 	}
 
+	if (do_decode_single) {
+		fd = -1;
+		info.value = addr_end;
+		addr_end = addr_start;
+	} else {
+		fd = open("/dev/mem", O_RDONLY);
+		if (fd < 0) {
+			perror("open(/dev/mem");
+			return EX_OSERR;
+		}
+	}
+
+	info.fd = fd;
+
 	rc = deserialize_decode_range(units, num_units, addr_start, addr_end,
 				      _decode_reg, &info);
 
-	close(fd);
+	if (fd >= 0)
+		close(fd);
 
 	if (rc < 0)
 		return EX_OSERR;

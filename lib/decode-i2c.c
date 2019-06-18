@@ -204,8 +204,7 @@ int main(int argc, char *argv[])
 
 	info.fd = fd;
 
-	rc = deserialize_decode_range(units, num_units,
-				      addr_start, addr_end + 1,
+	rc = deserialize_decode_range(units, num_units, addr_start, addr_end,
 				      _decode_reg, &info);
 
 	if (fd >= 0)
