@@ -575,6 +575,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
         code = top.create_block('reserved bits')
 
+        code.add_uint_var(0, 2, "flags")
         code.add_string('reserved', "id")
         code.add_string('reserved', "name")
 
