@@ -36,6 +36,8 @@ struct decode_info {
 	unsigned int	i2c_addr;
 	unsigned long	last_addr;
 	unsigned int	num_shown;
+
+	uintmax_t	value;
 };
 
 
@@ -128,9 +130,13 @@ static int _decode_reg(struct cpu_register const *reg, void *priv_)
 
 	++priv->num_shown;
 
-	rc = _i2c_read(addr, reg->width, &val, priv);
-	if (rc < 0)
-		return rc;
+	if (priv->fd < 0) {
+		val = priv->value;
+	} else {
+		rc = _i2c_read(addr, reg->width, &val, priv);
+		if (rc < 0)
+			return rc;
+	}
 
 	if (reg->offset > priv->last_addr + 10)
 		col_printf("\n");
@@ -184,23 +190,26 @@ int main(int argc, char *argv[])
 		return EX_SOFTWARE;
 	}
 
-	fd = open(i2c_dev, O_RDWR | O_CLOEXEC);
-	if (fd < 0) {
-		perror("open(<i2c>)");
-		return EX_NOINPUT;
+	if (do_decode_single) {
+		fd = -1;
+		info.value = addr_end;
+		addr_end = addr_start;
+	} else {
+		fd = open(i2c_dev, O_RDWR | O_CLOEXEC);
+		if (fd < 0) {
+			perror("open(<i2c>)");
+			return EX_NOINPUT;
+		}
 	}
 
 	info.fd = fd;
 
-	if (do_decode_single)
-		rc = deserialize_decode(units, num_units, addr_start,
-					addr_end, &info) ? 0 : -1;
-	else
-		rc = deserialize_decode_range(units, num_units,
-					      addr_start, addr_end + 1,
-					      _decode_reg, &info);
+	rc = deserialize_decode_range(units, num_units,
+				      addr_start, addr_end + 1,
+				      _decode_reg, &info);
 
-	close(fd);
+	if (fd >= 0)
+		close(fd);
 
 	if (rc < 0)
 		return EX_OSERR;
