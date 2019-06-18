@@ -193,8 +193,8 @@ int main(int argc, char *argv[])
 	info.fd = fd;
 
 	if (do_decode_single)
-		rc =deserialize_decode(units, num_units, addr_start,
-				       addr_end, &info) ? 0 : -1;
+		rc = deserialize_decode(units, num_units, addr_start,
+					addr_end, &info) ? 0 : -1;
 	else
 		rc = deserialize_decode_range(units, num_units,
 					      addr_start, addr_end + 1,
