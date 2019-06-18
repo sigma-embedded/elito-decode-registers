@@ -36,3 +36,7 @@
   @field LONG_ENUM
     @bits 20-0
     @enum 0 reserved
+
+  @field _rsrved
+    @bits 23-21
+    @reserved
