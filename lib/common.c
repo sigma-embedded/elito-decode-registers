@@ -30,13 +30,13 @@ void deserialize_dump_frac(struct cpu_regfield_frac const *fld,
 	v /= 1 << __builtin_popcount(frac_part);
 	v += int_part;
 
-	col_printf("\n  %-28" STR_FMT ":\t%f", STR_ARG(&fld->reg.name), v);
+	col_printf("\n  %-36" STR_FMT ":\t%f", STR_ARG(&fld->reg.name), v);
 }
 
 void deserialize_dump_bool(struct cpu_regfield_bool const *fld,
 			   bool v, void *priv_)
 {
-	col_printf("\n  %-28" STR_FMT ":\t%s",
+	col_printf("\n  %-36" STR_FMT ":\t%s",
 	       STR_ARG(&fld->reg.name), col_boolstr(v));
 }
 
@@ -45,11 +45,11 @@ void deserialize_dump_enum(struct cpu_regfield_enum const *fld,
 			   size_t idx, void *priv_)
 {
 	if (val)
-		col_printf("\n  %-28" STR_FMT ":\t%" STR_FMT,
+		col_printf("\n  %-36" STR_FMT ":\t%" STR_FMT,
 			   STR_ARG(&fld->reg.name),
 			   STR_ARG(&val->name));
 	else
-		col_printf("\n  %-28" STR_FMT ":\t#%zu",
+		col_printf("\n  %-36" STR_FMT ":\t#%zu",
 			   STR_ARG(&fld->reg.name),
 			   idx);
 }
@@ -57,13 +57,13 @@ void deserialize_dump_enum(struct cpu_regfield_enum const *fld,
 void deserialize_dump_sint(struct cpu_regfield_int const *fld,
 			   signed int v, void *priv_)
 {
-	col_printf("\n  %-28" STR_FMT ":\t%d", STR_ARG(&fld->reg.name), v);
+	col_printf("\n  %-36" STR_FMT ":\t%d", STR_ARG(&fld->reg.name), v);
 }
 
 void deserialize_dump_uint(struct cpu_regfield_int const *fld,
 			   unsigned int v, void *priv_)
 {
-	col_printf("\n  %-28" STR_FMT ":\t%u", STR_ARG(&fld->reg.name), v);
+	col_printf("\n  %-36" STR_FMT ":\t%u", STR_ARG(&fld->reg.name), v);
 }
 
 void deserialize_dump_reserved(struct cpu_regfield_reserved const *fld,
