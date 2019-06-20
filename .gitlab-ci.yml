@@ -8,6 +8,11 @@ build:
   - make clean
   - make install DESTDIR=/tmp/decode-install
   - make clean
+  - make tests CFLAGS='--coverage -fprofile-abs-path -fno-inline'
+  - make lcov-analyze GENHTML_DIR=public/lcov
+  - make clean
+  - scan-build make tests
+  - make clean
 
 .downstream-trigger: &downstream_trigger
   allow_failure: true
