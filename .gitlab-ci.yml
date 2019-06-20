@@ -1,7 +1,10 @@
 build:
   script:
   - make clean
-  - make -C testsuite
+  - make all
+  - make clean
+  - make tests
+  - make tests CHECKER='${VALGRIND}'
   - make clean
   - make install DESTDIR=/tmp/decode-install
   - make clean
