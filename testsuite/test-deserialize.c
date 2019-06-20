@@ -51,9 +51,11 @@ struct dump_data {
 	char const			*delim;
 };
 
+static bool		heap_alloc = false;
+
 void *deserialize_alloc(size_t len)
 {
-	if (1) {
+	if (heap_alloc) {
 		void	*ptr = (void *)(((uintptr_t)(heap.ptr) + 7) / 8 * 8);
 
 		if (heap.len - (ptr - heap.base) < len) {
@@ -367,12 +369,54 @@ void deserialize_dump_enum(struct cpu_regfield_enum const *fld,
 		_deserialize_dump_enum_terse(fld, val, idx, priv);
 }
 
-void deserialize_dump_reserved(struct cpu_regfield_reserved const *fld,
-			       reg_t v, void *priv)
+static char *deserialize_introspect_reserved(struct cpu_regfield_reserved const *fld,
+					     char *buf, size_t len)
 {
-	(void)fld;
-	(void)v;
-	(void)priv;
+	int	rc;
+
+	rc = snprintf(buf, len, "\t\t\t\t@reserved %x\n", fld->bitmask);
+
+	assert((size_t)rc < len);
+
+	return buf;
+}
+
+static char *_deserialize_dump_reserved(unsigned int bitmask, char *buf, size_t len)
+{
+	int	rc;
+
+	rc = snprintf(buf, len, "%x", bitmask);
+	assert((size_t)rc < len);
+	return buf;
+}
+
+static void _deserialize_dump_reserved_terse(struct cpu_regfield_reserved const *fld,
+					     unsigned int bitmask,
+					     struct dump_data *priv)
+{
+	int	rc;
+
+	priv->reg = fld->reg.reg;
+
+	if (1) {
+		rc = sprintf(priv->ptr, "%x", bitmask);
+
+		priv->ptr += rc;
+		priv->delim = ", ";
+	}
+}
+
+void deserialize_dump_reserved(struct cpu_regfield_reserved const *fld,
+			       reg_t v, void *priv_)
+{
+	struct dump_data	*priv = priv_;
+
+	if (priv->do_introspect)
+		deserialize_introspect_reserved(fld, priv->buf, priv->buf_len);
+	else if (!priv->is_terse)
+		_deserialize_dump_reserved(fld->bitmask, priv->buf, priv->buf_len);
+	else
+		_deserialize_dump_reserved_terse(fld, fld->bitmask, priv);
 }
 
 static void dump_field(struct cpu_regfield const *fld)
@@ -471,6 +515,8 @@ int main(int argc, char *argv[])
 	size_t		num_units;
 	struct cpu_unit	*units;
 
+	heap_alloc = getenv("TEST_HEAP_ALLOC");
+
 	heap.len  = stream_len * 8;
 	heap.base = malloc(heap.len );
 	heap.ptr  = heap.base;
@@ -491,4 +537,13 @@ int main(int argc, char *argv[])
 			    strtoul(argv[2], NULL, 0));
 		printf("\n");
 	}
+
+	if (!heap_alloc) {
+		for (size_t i = num_units; i > 0; --i)
+			deserialize_cpu_unit_release(&units[i - 1]);
+
+		free(units);
+	}
+
+	free(heap.base);
 }
