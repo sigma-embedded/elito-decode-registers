@@ -30,6 +30,8 @@ test-deserialize_SOURCES = \
 
 TEST_test-deserialize_DEFS = data-0
 
+TEST_OUTPUT = $(if ${TEST_VERBOSE},,> /dev/null)
+
 define build_sym
 $(CC) $(AM_CFLAGS) $(CFLAGS) -DDESERIALIZE_SYMBOLS=\"$(abspath $(filter %_symbols.h,$^))\" $(filter %.c,$^) -o $@ ${LIBS}
 endef
