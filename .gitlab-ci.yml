@@ -1,4 +1,7 @@
 build:
+  artifacts:
+    paths:
+      - public/
   script:
   - make clean
   - make all
