@@ -30,7 +30,7 @@ run_build_decode = ${CC} -o $@ \
 	${decode_CFLAGS} ${CPPFLAGS_$@} ${AM_CFLAGS} ${CFLAGS} $(filter %.c,$^) ${LDFLAGS} ${LIBS}
 
 define _set_dev_type
-decode-$1:decode-%:	$${decode_srcdir}/decode-$2.c $${decode_SOURCES} registers-%.inc.h symbols-%.h
+decode-$1:decode-%:	$${decode_srcdir}/decode-$2.c $${decode_SOURCES} registers-%.inc.h symbols-%.h regstream-%.bin
 	$$(call run_build_decode)
 
 clean:	.clean-$1
@@ -46,3 +46,6 @@ registers-%.inc.h:
 
 symbols-%.h:
 	$(call run_gendesc,--c-define)
+
+regstream-%.bin:
+	$(call run_gendesc,--datastream)
