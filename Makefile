@@ -72,6 +72,7 @@ clean:	.subdir-clean
 	rm -rf __pycache__
 	rm -f *.pyc
 	rm -f decode-registers-gendesc
+	rm -f ${bin_PROGRAMS}
 
 decode-registers-gendesc:	src/gendesc Makefile
 	@rm -f $@
@@ -95,7 +96,7 @@ install:	.install-py .install-bin .install-ch .install-mk
 	${INSTALL_D} ${DESTDIR}${mkdir}
 	${INSTALL} $^ ${DESTDIR}${mkdir}/
 
-.install-bin:	${bin_SCRIPTS}
+.install-bin:	${bin_SCRIPTS} ${bin_PROGRAMS}
 	${INSTALL_D} ${DESTDIR}${bindir}
 	${INSTALL} $^ ${DESTDIR}${bindir}/
 
