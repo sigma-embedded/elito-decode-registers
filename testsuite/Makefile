@@ -17,8 +17,8 @@ XXD =		xxd
 CHECKER ?=
 VALGRIND ?=	valgrind --quiet --tool=memcheck --leak-check=full --show-leak-kinds=all --error-exitcode=23
 
-AM_CFLAGS =	-std=gnu11 -Wall -W -pedantic -Wno-pointer-arith -I ../lib
-CFLAGS =	-Werror -O0 -g3 -D_XFORTIFY_SOURCE=2
+AM_CFLAGS =	-std=gnu11 -Wall -W -pedantic -Wno-pointer-arith -Wno-unused-parameter -I ../lib
+CFLAGS ?=	-O2 -g3 -Werror -D_FORTIFY_SOURCE=2 -fstack-protector
 
 test_PROGRAMS = \
   test-deserialize
