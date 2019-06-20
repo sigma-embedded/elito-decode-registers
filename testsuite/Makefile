@@ -64,11 +64,14 @@ test-deserialize:	${test-deserialize_SOURCES} test-deserialize_symbols.h test-de
 %_stream.h:	%_stream.bin
 	$(XXD) -i < $< > $@
 
-.run-tests:	test-decode
+.run-tests:	..run-test-decode ..run-test-deserialize
 
-test-decode:	../decode-device test-deserialize_stream.bin FORCE
-	${CHECKER} $< --type emu --definitions $(filter %.bin,$^)
+..run-test-decode:	../decode-device test-deserialize_stream.bin FORCE
+	${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^)  ${TEST_OUTPUT}
 
+..run-test-deserialize:	test-deserialize FORCE
+	env -u TEST_HEAP_ALLOC ${CHECKER} $(abspath $<) ${TEST_OUTPUT}
+	env TEST_HEAP_ALLOC=1  ${CHECKER} $(abspath $<) ${TEST_OUTPUT}
 
 FORCE:
 .PHONY:		FORCE
