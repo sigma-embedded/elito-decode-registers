@@ -2,4 +2,5 @@
 *.pyo
 .nfs*
 /__pycache__
+/decode-device
 /decode-registers-gendesc

@@ -1,5 +1,8 @@
 PACKAGE =	decode-registers
 
+bin_PROGRAMS = \
+	decode-device
+
 bin_SCRIPTS = \
 	decode-registers-gendesc
 
@@ -29,6 +32,14 @@ mk_DATA = \
 	lib/cpudef.m4 \
 	lib/build.mk \
 
+decode-device_SOURCES = \
+	lib/decode-device.c \
+	lib/common.c \
+	lib/common.h \
+	lib/deserialize.c \
+	lib/deserialize.h \
+	lib/all-symbols.h \
+
 prefix ?= /usr/local
 bindir ?= ${prefix}/bin
 datadir ?= ${prefix}/data
@@ -37,6 +48,9 @@ pydir ?= ${pkgdatadir}/py
 chdir ?= ${pkgdatadir}/c
 mkdir ?= ${pkgdatadir}/mk
 
+CC ?=		gcc
+AM_CFLAGS =	-std=gnu11 -Wall -W -Wno-unused-parameter
+CFLAGS ?=	-O2 -g3 -Werror -D_FORTIFY_SOURCE=2 -fstack-protector
 
 PYTHON3 ?=	/usr/bin/python3
 SED = 		sed
@@ -52,7 +66,7 @@ INSTALL_D = ${INSTALL} -d -m 0755
 
 SUBDIRS = testsuite
 
-all:	$(bin_SCRIPTS) $(py_DATA) $(ch_DATA)
+all:	$(bin_SCRIPTS) $(bin_PROGRAMS) $(py_DATA) $(ch_DATA)
 
 clean:	.subdir-clean
 	rm -rf __pycache__
@@ -63,6 +77,9 @@ decode-registers-gendesc:	src/gendesc Makefile
 	@rm -f $@
 	$(SED) ${SED_CMD} $< >$@
 	chmod a-r,a+rx $@
+
+decode-device:	${decode-device_SOURCES}
+	${CC} ${AM_CFLAGS} ${CFLAGS} $(filter %.c,$^) -o $@ -I. -DDESERIALIZE_SYMBOLS='<$(filter %/all-symbols.h,$^)>'
 
 install:	.install-py .install-bin .install-ch .install-mk
 
