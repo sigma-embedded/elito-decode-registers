@@ -23,6 +23,7 @@ struct decode_info {
 	bool			is_mapped;
 	size_t			page_sz;
 	uintptr_t		last_addr;
+	unsigned int		num_shown;
 	struct cpu_unit const	*last_unit;
 
 	uintmax_t		value;
@@ -101,13 +102,13 @@ static int _decode_reg(struct cpu_register const *reg, void *priv_)
 			return rc;
 	}
 
-	if (reg->unit !=  priv->last_unit)
-		col_printf("\n======================== %" STR_FMT " ==============================\n\n",
+	if (reg->unit !=  priv->last_unit) {
+		col_printf("%s======================== %" STR_FMT " ==============================",
+			   priv->num_shown > 0 ? "\n" : "",
 			   STR_ARG(&reg->unit->name));
-	else if (addr > priv->last_addr + 10)
-		col_printf("\n");
+	}
 
-	col_printf("&@0x%08lx&# &N%-28" STR_FMT "&#\t&~0x%0*llx&#",
+	col_printf("\n&@0x%08lx&# &N%-28" STR_FMT "&#\t&~0x%0*llx&#",
 		   addr, STR_ARG(&reg->name),
 		   (unsigned int)(reg->width / 4),
 		   (unsigned long long)val);
@@ -118,6 +119,8 @@ static int _decode_reg(struct cpu_register const *reg, void *priv_)
 	priv->last_unit = reg->unit;
 
 	col_printf("\n");
+
+	++priv->num_shown;
 
 	return 0;
 }
@@ -171,6 +174,7 @@ int main(int argc, char *argv[])
 	}
 
 	info.fd = fd;
+	info.last_addr = addr_start;
 
 	rc = deserialize_decode_range(units, num_units, addr_start, addr_end,
 				      _decode_reg, &info);
@@ -181,5 +185,5 @@ int main(int argc, char *argv[])
 	if (rc < 0)
 		return EX_OSERR;
 
-	return EX_OK;
+	return info.num_shown > 0 ? EX_OK : EX_NOINPUT;
 }
