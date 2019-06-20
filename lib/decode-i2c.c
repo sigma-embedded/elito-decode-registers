@@ -128,8 +128,6 @@ static int _decode_reg(struct cpu_register const *reg, void *priv_)
 	uintmax_t		val;
 	int			rc;
 
-	++priv->num_shown;
-
 	if (priv->fd < 0) {
 		val = priv->value;
 	} else {
@@ -138,7 +136,7 @@ static int _decode_reg(struct cpu_register const *reg, void *priv_)
 			return rc;
 	}
 
-	if (reg->offset > priv->last_addr + 10)
+	if (priv->num_shown > 0)
 		col_printf("\n");
 
 	col_printf("&@0x%04lx&# &N%-28" STR_FMT "&#\t&~0x%0*llx&#",
@@ -149,6 +147,8 @@ static int _decode_reg(struct cpu_register const *reg, void *priv_)
 	deserialize_decode_reg(reg, val, priv);
 
 	col_printf("\n");
+
+	++priv->num_shown;
 
 	return 0;
 }
@@ -203,6 +203,7 @@ int main(int argc, char *argv[])
 	}
 
 	info.fd = fd;
+	info.last_addr = addr_start;
 
 	rc = deserialize_decode_range(units, num_units, addr_start, addr_end,
 				      _decode_reg, &info);
