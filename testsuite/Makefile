@@ -14,6 +14,8 @@
 
 PYTHON3 ?=	/usr/bin/python3
 XXD =		xxd
+CHECKER ?=
+VALGRIND ?=	valgrind --quiet --tool=memcheck --leak-check=full --show-leak-kinds=all --error-exitcode=23
 
 AM_CFLAGS =	-std=gnu11 -Wall -W -pedantic -Wno-pointer-arith -I ../lib
 CFLAGS =	-Werror -O0 -g3 -D_XFORTIFY_SOURCE=2
@@ -33,6 +35,8 @@ $(CC) $(AM_CFLAGS) $(CFLAGS) -DDESERIALIZE_SYMBOLS=\"$(abspath $(filter %_symbol
 endef
 
 all:	${test_PROGRAMS}
+
+tests:	all .run-tests
 
 clean:
 	rm -f ${test_PROGRAMS}
@@ -57,3 +61,12 @@ test-deserialize:	${test-deserialize_SOURCES} test-deserialize_symbols.h test-de
 
 %_stream.h:	%_stream.bin
 	$(XXD) -i < $< > $@
+
+.run-tests:	test-decode
+
+test-decode:	../decode-device test-deserialize_stream.bin FORCE
+	${CHECKER} $< --type emu --definitions $(filter %.bin,$^)
+
+
+FORCE:
+.PHONY:		FORCE

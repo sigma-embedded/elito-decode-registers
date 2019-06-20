@@ -100,6 +100,9 @@ install:	.install-py .install-bin .install-ch .install-mk
 	${INSTALL_D} ${DESTDIR}${bindir}
 	${INSTALL} $^ ${DESTDIR}${bindir}/
 
+.subdir-tests:	all
+tests:	.subdir-tests
+
 .subdir-%:
 	${MAKE} SUBDIR_TARGET='$*' .run-subdir
 
