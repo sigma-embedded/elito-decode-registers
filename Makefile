@@ -55,6 +55,7 @@ CFLAGS ?=	-O2 -g3 -Werror -D_FORTIFY_SOURCE=2 -fstack-protector
 LDFLAGS ?=
 
 LCOV ?=		lcov
+LCOV_C =	${LCOV} -c --no-external
 LCOV_OUTPUT ?=	lcov.info
 GENHTML ?=	genhtml
 GENHTML_DIR ?=	lcov/html
@@ -96,7 +97,7 @@ lcov-analyze:	${LCOV_OUTPUT}
 	${GENHTML} -o ${GENHTML_DIR} $<
 
 ${LCOV_OUTPUT}:	FORCE
-	${LCOV} -c --output '$@' -d .
+	${LCOV_C} --output '$@' -d .
 
 .install-py:	${py_DATA}
 	${INSTALL_D} ${DESTDIR}${pydir}
