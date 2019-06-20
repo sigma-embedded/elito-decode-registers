@@ -1,6 +1,9 @@
+*.gcda
+*.gcno
 *.pyc
 *.pyo
 .nfs*
 /__pycache__
+/compile_commands.json
 /decode-device
 /decode-registers-gendesc
