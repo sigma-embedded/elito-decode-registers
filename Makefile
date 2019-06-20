@@ -122,3 +122,6 @@ tests:	.subdir-tests
 
 .run-subdir-%:
 	${MAKE} -C '$*' ${SUBDIR_TARGET}
+
+FORCE:
+..PHONY:	FORCE
