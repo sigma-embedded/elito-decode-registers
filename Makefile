@@ -101,19 +101,19 @@ ${LCOV_OUTPUT}:	FORCE
 
 .install-py:	${py_DATA}
 	${INSTALL_D} ${DESTDIR}${pydir}
-	${INSTALL} $^ ${DESTDIR}${pydir}/
+	${INSTALL_DATA} $^ ${DESTDIR}${pydir}/
 
 .install-ch:	${ch_DATA}
 	${INSTALL_D} ${DESTDIR}${chdir}
-	${INSTALL} $^ ${DESTDIR}${chdir}/
+	${INSTALL_DATA} $^ ${DESTDIR}${chdir}/
 
 .install-mk:	${mk_DATA}
 	${INSTALL_D} ${DESTDIR}${mkdir}
-	${INSTALL} $^ ${DESTDIR}${mkdir}/
+	${INSTALL_DATA} $^ ${DESTDIR}${mkdir}/
 
 .install-bin:	${bin_SCRIPTS} ${bin_PROGRAMS}
 	${INSTALL_D} ${DESTDIR}${bindir}
-	${INSTALL} $^ ${DESTDIR}${bindir}/
+	${INSTALL_BIN} $^ ${DESTDIR}${bindir}/
 
 .subdir-tests:	all
 tests:	.subdir-tests
