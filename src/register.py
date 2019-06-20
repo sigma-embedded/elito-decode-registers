@@ -560,7 +560,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
     def __generate_code_uint(self, top):
         assert(self.__type == self.TYPE_UINT)
 
-        symbol = generator.Symbol("TYPE_UINT", Field.TYPE_UINT, "'signed int' type")
+        symbol = generator.Symbol("TYPE_UINT", Field.TYPE_UINT, "'unsigned int' type")
 
         top.add_symbol(symbol)
         top.add_type(symbol, None)
