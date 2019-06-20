@@ -1,6 +1,12 @@
+stages:
+  - build
+  - deploy
+
 build:
+  stage: build
   coverage: /^\s*Total:\|(\d+\.\d+\%)\s+.*$/
   artifacts:
+    expire_in: 1 day
     paths:
       - public/
   script:
@@ -20,6 +26,7 @@ build:
 
 .downstream-trigger: &downstream_trigger
   allow_failure: true
+  stage: build
   only:
     - master
   script:
@@ -39,3 +46,23 @@ test-downstream:
     GIT_SUBMODULE_STRATEGY: none
     X_CI_DOWNSTREAM_ID: ${X_CI_DOWNSTREAM_ID_DEFS}
     X_CI_TRIGGER_TOKEN: ${X_CI_TRIGGER_TOKEN_DEFS}
+
+pages:
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+    GIT_SUBMODULE_STRATEGY: none
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - public
+  only:
+    - master
+  dependencies:
+    - build
+  script:
+    - "true"
+  after_script:
+    - rm -f public/index.html index.html
+    - ( cd public && tree -shF -D --charset=utf-8 -H . ) > index.html
+    - mv index.html public/
