@@ -52,6 +52,11 @@ CC ?=		gcc
 AM_CFLAGS =	-std=gnu11 -Wall -W -Wno-unused-parameter
 CFLAGS ?=	-O2 -g3 -Werror -D_FORTIFY_SOURCE=2 -fstack-protector
 
+LCOV ?=		lcov
+LCOV_OUTPUT ?=	lcov.info
+GENHTML ?=	genhtml
+GENHTML_DIR ?=	lcov/html
+
 PYTHON3 ?=	/usr/bin/python3
 SED = 		sed
 
@@ -70,7 +75,7 @@ all:	$(bin_SCRIPTS) $(bin_PROGRAMS) $(py_DATA) $(ch_DATA)
 
 clean:	.subdir-clean
 	rm -rf __pycache__
-	rm -f *.pyc *.gcda *.gcno
+	rm -f *.pyc *.gcda *.gcno ${LCOV_OUTPUT}
 	rm -f decode-registers-gendesc
 	rm -f ${bin_PROGRAMS}
 
@@ -83,6 +88,13 @@ decode-device:	${decode-device_SOURCES}
 	${CC} ${AM_CFLAGS} ${CFLAGS} $(filter %.c,$^) -o $@ -I. -DDESERIALIZE_SYMBOLS='<$(filter %/all-symbols.h,$^)>'
 
 install:	.install-py .install-bin .install-ch .install-mk
+
+lcov-analyze:	${LCOV_OUTPUT}
+	${LCOV} --list $<
+	${GENHTML} -o ${GENHTML_DIR} $<
+
+${LCOV_OUTPUT}:	FORCE
+	${LCOV} -c --output '$@' -d .
 
 .install-py:	${py_DATA}
 	${INSTALL_D} ${DESTDIR}${pydir}
