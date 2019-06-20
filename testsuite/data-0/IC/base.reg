@@ -40,3 +40,11 @@
   @field _rsrved
     @bits 23-21
     @reserved
+
+  @field BAUD
+    @frac 20-18 16-12
+    @wo
+
+  @field THUMBS_UP
+    @sint 10-7
+    @ro
