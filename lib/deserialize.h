@@ -126,6 +126,8 @@ inline static size_t deserialize_get_sz(void const *start, size_t len,
 		return (uintptr_t)(end) - (uintptr_t)(start);
 }
 
+void deserialize_cpu_unit_release(struct cpu_unit const *unit);
+
 bool deserialize_cpu_units(struct cpu_unit **unit, size_t *cnt,
 			   void const **buf, size_t *sz);
 

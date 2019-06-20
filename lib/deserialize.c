@@ -725,3 +725,33 @@ int deserialize_decode_range(struct cpu_unit const units[], size_t unit_cnt,
 
 	return rc;
 }
+
+static void xfree(void const *p)
+{
+	free((void *)p);
+}
+
+static void deserialize_cpu_regfield_free(struct cpu_regfield const *fld)
+{
+	/* TODO: this is hacky; we should add a _release() callback to the
+	 * cpu_regfield_XXX objects. For now, assume/require that 'reg' is the
+	 * first attribute in the specialized object */
+
+	xfree(fld);
+}
+
+static void deserialize_cpu_register_release(struct cpu_register const *reg)
+{
+	for (size_t i = 0; i < reg->num_fields; ++i)
+		deserialize_cpu_regfield_free(reg->fields[i]);
+
+	xfree(reg->fields);
+}
+
+void deserialize_cpu_unit_release(struct cpu_unit const *unit)
+{
+	for (size_t i = 0; i < unit->num_registers; ++i)
+		deserialize_cpu_register_release(&unit->registers[i]);
+
+	xfree(unit->registers);
+}
