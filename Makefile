@@ -50,7 +50,9 @@ mkdir ?= ${pkgdatadir}/mk
 
 CC ?=		gcc
 AM_CFLAGS =	-std=gnu11 -Wall -W -Wno-unused-parameter
+AM_LDFLAGS =	-Wl,-as-needed
 CFLAGS ?=	-O2 -g3 -Werror -D_FORTIFY_SOURCE=2 -fstack-protector
+LDFLAGS ?=
 
 LCOV ?=		lcov
 LCOV_OUTPUT ?=	lcov.info
@@ -85,7 +87,7 @@ decode-registers-gendesc:	src/gendesc Makefile
 	chmod a-r,a+rx $@
 
 decode-device:	${decode-device_SOURCES}
-	${CC} ${AM_CFLAGS} ${CFLAGS} $(filter %.c,$^) -o $@ -I. -DDESERIALIZE_SYMBOLS='<$(filter %/all-symbols.h,$^)>'
+	${CC} ${AM_CFLAGS} ${CFLAGS} ${AM_LDFLAGS} ${LDFLAGS} $(filter %.c,$^) -o $@ -I. -DDESERIALIZE_SYMBOLS='<$(filter %/all-symbols.h,$^)>'
 
 install:	.install-py .install-bin .install-ch .install-mk
 

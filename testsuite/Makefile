@@ -18,7 +18,9 @@ CHECKER ?=
 VALGRIND ?=	valgrind --quiet --tool=memcheck --leak-check=full --show-leak-kinds=all --error-exitcode=23
 
 AM_CFLAGS =	-std=gnu11 -Wall -W -pedantic -Wno-pointer-arith -Wno-unused-parameter -I ../lib
+AM_LDFLAGS =	-Wl,-as-needed
 CFLAGS ?=	-O2 -g3 -Werror -D_FORTIFY_SOURCE=2 -fstack-protector
+LDFLAGS ?=
 
 test_PROGRAMS = \
   test-deserialize
@@ -33,7 +35,7 @@ TEST_test-deserialize_DEFS = data-0
 TEST_OUTPUT = $(if ${TEST_VERBOSE},,> /dev/null)
 
 define build_sym
-$(CC) $(AM_CFLAGS) $(CFLAGS) -DDESERIALIZE_SYMBOLS=\"$(abspath $(filter %_symbols.h,$^))\" $(filter %.c,$^) -o $@ ${LIBS}
+$(CC) $(AM_CFLAGS) $(CFLAGS) ${AM_LDFLAGS} ${LDFLAGS} -DDESERIALIZE_SYMBOLS=\"$(abspath $(filter %_symbols.h,$^))\" $(filter %.c,$^) -o $@ ${LIBS}
 endef
 
 all:	${test_PROGRAMS}
