@@ -42,7 +42,7 @@ tests:	all .run-tests
 
 clean:
 	rm -f ${test_PROGRAMS}
-	rm -f *.bin *.tmp
+	rm -f *.bin *.tmp *.gcda *.gcno
 	rm -f ${addsuffix _fill.c,${test_PROGRAMS}}
 	rm -f ${addsuffix _stream.h,${test_PROGRAMS}}
 	rm -f ${addsuffix _symbols.h,${test_PROGRAMS}}

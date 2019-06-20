@@ -70,7 +70,7 @@ all:	$(bin_SCRIPTS) $(bin_PROGRAMS) $(py_DATA) $(ch_DATA)
 
 clean:	.subdir-clean
 	rm -rf __pycache__
-	rm -f *.pyc
+	rm -f *.pyc *.gcda *.gcno
 	rm -f decode-registers-gendesc
 	rm -f ${bin_PROGRAMS}
 
