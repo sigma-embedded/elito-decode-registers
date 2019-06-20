@@ -1,4 +1,5 @@
 build:
+  coverage: /^\s*Total:\|(\d+\.\d+\%)\s+.*$/
   artifacts:
     paths:
       - public/
