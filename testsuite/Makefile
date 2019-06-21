@@ -69,6 +69,8 @@ test-deserialize:	${test-deserialize_SOURCES} test-deserialize_symbols.h test-de
 .run-tests:	..run-test-decode ..run-test-deserialize
 
 ..run-test-decode:	../decode-device test-deserialize_stream.bin FORCE
+	${CHECKER} $(abspath $<) --help $(TEST_OUTPUT)
+	${CHECKER} $(abspath $<) --version $(TEST_OUTPUT)
 	${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^)  ${TEST_OUTPUT}
 
 ..run-test-deserialize:	test-deserialize FORCE
