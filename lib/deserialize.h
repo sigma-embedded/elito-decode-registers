@@ -40,6 +40,9 @@ struct cpu_unit {
 	struct string			id;
 	struct string			name;
 
+	uint8_t				addr_width;
+	uint8_t				endian;
+
 	size_t				num_registers;
 	struct cpu_register const	*registers;
 };

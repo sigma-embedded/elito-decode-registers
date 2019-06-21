@@ -611,6 +611,8 @@ static bool pop_cpu_unit(struct cpu_unit *unit, void const **buf, size_t *sz)
 	    !pop_uintptr_t(&unit->end, buf, sz) ||
 	    !pop_string(&unit->id, buf, sz) ||
 	    !pop_string(&unit->name, buf, sz) ||
+	    !pop_u8(&unit->addr_width, buf, sz) ||
+	    !pop_u8(&unit->endian, buf, sz) ||
 	    !pop_size_t(&num_regs, buf, sz))
 		return false;
 
