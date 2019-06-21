@@ -35,7 +35,7 @@ decode-$1:decode-%:	$${decode_srcdir}/decode-$2.c $${decode_SOURCES} registers-%
 
 clean:	.clean-$1
 .clean-$1:.clean-%:
-	rm -f registers-$$*.inc.h symbols-$$*.h decode-$$*
+	rm -f registers-$$*.inc.h symbols-$$*.h decode-$$* regstream-$$*.bin
 
 endef
 
