@@ -140,7 +140,7 @@ class Unit(block.Block, block.Mergeable):
 
     def _assign_regwidth(self, width):
         self.__regwidth = width
-        
+
     def _assign_memory(self, addr, len):
         self.__memory = [addr, len]
 

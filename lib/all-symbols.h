@@ -1,7 +1,7 @@
-#define REGISTER_FLAG_ACCESS_READ				1		/* read access */
-#define REGISTER_FLAG_ACCESS_WRITE				2		/* write access */
 #define FIELD_FLAG_ACCESS_READ					1		/* read access */
 #define FIELD_FLAG_ACCESS_WRITE					2		/* write access */
+#define REGISTER_FLAG_ACCESS_READ				1		/* read access */
+#define REGISTER_FLAG_ACCESS_WRITE				2		/* write access */
 #define TYPE_ENUM						1		/* 'enum' type */
 #define TYPE_BOOL						2		/* 'bool' type */
 #define TYPE_FRAC						3		/* 'frac' type */
