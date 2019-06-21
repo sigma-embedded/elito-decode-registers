@@ -16,6 +16,7 @@
 #include <linux/i2c-dev.h>
 
 #include "deserialize.h"
+#include "all-symbols.h"
 
 #include "common.h"
 
@@ -23,7 +24,7 @@
 #define CMD_VERSION             0x1001
 
 static char const			CMDLINE_SHORT[] = \
-	"T:D:A:E:W:v:d:";
+	"T:D:A:v:d:";
 
 static struct option const		CMDLINE_OPTIONS[] = {
 	{ "help",         no_argument,       0, CMD_HELP },
@@ -31,8 +32,6 @@ static struct option const		CMDLINE_OPTIONS[] = {
 	{ "type",         required_argument, 0, 'T' },
 	{ "bus-device",   required_argument, 0, 'D' },
 	{ "bus-addr",     required_argument, 0, 'A' },
-	{ "endian",       required_argument, 0, 'E' },
-	{ "addr-width",   required_argument, 0, 'W' },
 	{ "value",        required_argument, 0, 'v' },
 	{ "definitions",  required_argument, 0, 'd' },
 	{ NULL, 0, 0, 0 }
@@ -43,12 +42,11 @@ static void show_help(void)
 	printf(""
 	       "Usage: decode [--help] [--version]\n"
 	       "    --type|-T <type> --definitions|-d <file>\n"
-	       "    [--bus-device|-D <device>] [--bus-addr|-A <addr>] [--addr-width|-W <width>\n"
-	       "    [--endian|-E little|big] [--value|-v <value>]\n"
+	       "    [--bus-device|-D <device>] [--bus-addr|-A <addr>]\n"
+	       "    [--value|-v <value>]\n"
 	       "\n"
 	       "Required options:\n"
 	       "    - I2C: --bus-device (e.g. '/dev/i2c-2'), --bus-addr,\n"
-	       "           --addr-width (8, 16, 32), --endian\n"
 	       "    - MEM: --bus-device (e..g '/dev/mem')\n"
 	       "    - EMU: --value\n"
 	       "\n");
@@ -79,6 +77,8 @@ struct device_ops {
 	void			(*deinit)(struct device *);
 	int			(*read)(struct device *, uintptr_t addr,
 					unsigned int width, uintmax_t *val);
+	void			(*select_unit)(struct device *,
+					       struct cpu_unit const *);
 };
 
 struct device_emu {
@@ -280,26 +280,63 @@ static int device_i2c_read(struct device *dev, uintptr_t addr,
 	return 0;
 }
 
-static struct device_ops const	device_ops_i2c = {
-	.deinit		= device_i2c_deinit,
-	.read		= device_i2c_read,
-};
-
-static int device_i2c_init(struct device *dev, char const *bus_device,
-			   unsigned int addr, enum endianess endianess,
-			   unsigned int addr_width)
+static void device_i2c_select_unit(struct device *dev,
+				   struct cpu_unit const *unit)
 {
-	int			fd;
+	unsigned int	addr_width;
+	enum endianess	endian;
 
-	switch (addr_width) {
+	switch (unit->addr_width) {
+	case 0:
+		/* default value */
+		addr_width = 8;
+		break;
 	case 8:
 	case 16:
 	case 32:
+		addr_width = unit->addr_width;
 		break;
 	default:
-		fprintf(stderr, "unsupported address width %u\n", addr_width);
-		return EX_USAGE;
+		fprintf(stderr,
+			"invalid address width %d in unit %" STR_FMT "\n",
+			unit->addr_width, STR_ARG(&unit->name));
+		abort();
 	}
+
+	switch (unit->endian) {
+	case UNIT_ENDIAN_BIG:
+		endian = ENDIAN_BIG;
+		break;
+	case UNIT_ENDIAN_LITTLE:
+		endian = ENDIAN_LITLLE;
+		break;
+	case UNIT_ENDIAN_NATIVE:
+		/* endianess on i2c is usually big... */
+		endian = ENDIAN_BIG;
+		break;
+	default:
+		fprintf(stderr,
+			"unsupported endinaess %d in unit %" STR_FMT "\n",
+			unit->endian, STR_ARG(&unit->name));
+		abort();
+	}
+
+	if (dev) {
+		dev->i2c.addr_width = addr_width;
+		dev->i2c.endianess  = endian;
+	}
+}
+
+static struct device_ops const	device_ops_i2c = {
+	.deinit		= device_i2c_deinit,
+	.read		= device_i2c_read,
+	.select_unit	= device_i2c_select_unit,
+};
+
+static int device_i2c_init(struct device *dev, char const *bus_device,
+			   unsigned int addr)
+{
+	int			fd;
 
 	if (!bus_device) {
 		fprintf(stderr, "missing --bus-device\n");
@@ -317,8 +354,8 @@ static int device_i2c_init(struct device *dev, char const *bus_device,
 		.i2c		= {
 			.fd		= fd,
 			.i2c_addr	= addr,
-			.addr_width	= addr_width,
-			.endianess	= endianess,
+			.addr_width	= 8,
+			.endianess	= ENDIAN_BIG,
 		},
 		.ops		= &device_ops_i2c,
 	};
@@ -481,20 +518,6 @@ static bool parse_uint(uintmax_t *v, char const *str)
 	return true;
 }
 
-static bool parse_endian(enum endianess *dst, char const *str)
-{
-	if (strcmp(str, "little") == 0) {
-		*dst = ENDIAN_LITLLE;
-	} else if (strcmp(str, "big") == 0) {
-		*dst = ENDIAN_BIG;
-	} else {
-		fprintf(stderr, "unsupported endianess '%s'\n", str);
-		return false;
-	}
-
-	return true;
-}
-
 static void definitions_release(struct definitions *def)
 {
 	free((void *)def->mem);
@@ -591,15 +614,20 @@ static int _decode_reg(struct cpu_register const *reg, void *ctx_)
 	uintmax_t		val;
 	int			rc;
 
-	rc = ctx->dev.ops->read(&ctx->dev, addr, reg->width, &val);
-	if (rc < 0)
-		return rc;
-
-	if (reg->unit !=  ctx->last_unit) {
+	if (reg->unit != ctx->last_unit) {
 		col_printf("%s======================== %" STR_FMT " ==============================",
 			   ctx->num_shown > 0 ? "\n" : "",
 			   STR_ARG(&reg->unit->name));
+
+		if (ctx->dev.ops->select_unit)
+			ctx->dev.ops->select_unit(&ctx->dev, reg->unit);
+
+		ctx->last_unit = reg->unit;
 	}
+
+	rc = ctx->dev.ops->read(&ctx->dev, addr, reg->width, &val);
+	if (rc < 0)
+		return rc;
 
 	col_printf("\n&@0x%08lx&# &N%-28" STR_FMT "&#\t&~0x%0*llx&#",
 		   addr, STR_ARG(&reg->name),
@@ -607,8 +635,6 @@ static int _decode_reg(struct cpu_register const *reg, void *ctx_)
 		   (unsigned long long)val);
 
 	deserialize_decode_reg(reg, val, ctx);
-
-	ctx->last_unit = reg->unit;
 
 	col_printf("\n");
 
@@ -621,9 +647,7 @@ int main(int argc, char *argv[])
 {
 	enum device_type	dev_type = DEVTYPE_NONE;;
 	uintmax_t		bus_addr = 0;;
-	uintmax_t		addr_width = 0;
 	char const		*bus_device = NULL;
-	enum endianess		endian = ENDIAN_BIG;
 	uintmax_t		value = 0;
 	char const		*definitions_file = NULL;
 	struct definitions	definitions = { .mem = NULL };
@@ -664,18 +688,6 @@ int main(int argc, char *argv[])
 
 		case 'D':
 			bus_device = optarg;
-			break;
-
-		case 'E':
-			if (!parse_endian(&endian, optarg))
-				return EX_USAGE;
-			break;
-
-		case 'W':
-			if (!parse_uint(&addr_width, optarg)) {
-				fprintf(stderr, "invalid --addr-width\n");
-				return EX_USAGE;
-			}
 			break;
 
 		case 'v':
@@ -736,8 +748,7 @@ int main(int argc, char *argv[])
 
 	switch (dev_type) {
 	case DEVTYPE_I2C:
-		rc = device_i2c_init(&ctx.dev, bus_device, bus_addr, endian,
-				     addr_width);
+		rc = device_i2c_init(&ctx.dev, bus_device, bus_addr);
 		break;
 
 	case DEVTYPE_EMU:
