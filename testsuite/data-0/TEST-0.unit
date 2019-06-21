@@ -1,3 +1,4 @@
 @unit Test-0
   @reg 0x4000 0x1000
+  @regwidth 32 20 LE
   @registers IC/

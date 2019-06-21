@@ -31,7 +31,9 @@
 @unit "IC"
   @name "Interrupt controller"
   @reg  0x2000 0x100
+  @regwidth 32 32 BE
   @registers IC/
 
 @unit[0] Test
   @reg  1 44
+  @regwidth 32 8
