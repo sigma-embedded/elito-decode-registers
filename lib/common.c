@@ -200,3 +200,16 @@ void col_printf(char const *fmt, ...)
 
 	free(fmt_buf.d);
 }
+
+char *string_to_c(struct string const *str)
+{
+	char		*res = malloc(str->len + 1);
+
+	if (!res)
+		return res;
+
+	memcpy(res, str->data, str->len);
+	res[str->len] = '\0';
+
+	return res;
+}

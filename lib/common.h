@@ -26,4 +26,7 @@ void col_printf(char const *fmt, ...) __attribute__((__format__(gnu_printf, 1,2)
 char const	*col_boolstr(bool v) __attribute__((__pure__));
 void		col_init(int);
 
+struct string;
+extern char *string_to_c(struct string const *);
+
 #endif	/* H_DECODE_MX8_AR052X_DESERIALIZE_H */
