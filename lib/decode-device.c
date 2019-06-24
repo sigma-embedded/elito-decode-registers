@@ -1,4 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0-only */
+#define _GNU_SOURCE
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -7,6 +9,7 @@
 #include <unistd.h>
 #include <sysexits.h>
 #include <getopt.h>
+#include <fnmatch.h>
 
 #include <sys/fcntl.h>
 #include <sys/mman.h>
@@ -118,6 +121,8 @@ struct ctx {
 	struct cpu_unit const		*last_unit;
 
 	unsigned int			num_shown;
+
+	char const			*unit_glob;
 };
 
 union uinttype {
@@ -643,6 +648,20 @@ static int _decode_reg(struct cpu_register const *reg, void *ctx_)
 	return 0;
 }
 
+static bool unit_match(struct cpu_unit const *unit, struct ctx *ctx)
+{
+	char const		*name = string_to_c(&unit->name);
+	bool			rc;
+
+	if (!name)
+		abort();
+
+	rc = fnmatch(ctx->unit_glob, name, FNM_CASEFOLD) == 0;
+	free((void *)name);
+
+	return rc;
+}
+
 int main(int argc, char *argv[])
 {
 	enum device_type	dev_type = DEVTYPE_NONE;;
@@ -721,18 +740,25 @@ int main(int argc, char *argv[])
 		char const	*addr = argv[optind];
 		uintmax_t	tmp;
 
-		if (!parse_uint(&tmp, addr)) {
+		if (addr[0] == '@') {
+			ctx.unit_glob = addr + 1;
+		} else if (!parse_uint(&tmp, addr)) {
 			fprintf(stderr, "invalid start address '%s'\n", addr);
 			return EX_USAGE;
+		} else {
+			addr_start = tmp;
+			addr_end   = tmp;
 		}
-
-		addr_start = tmp;
-		addr_end   = tmp;
 	}
 
 	if (optind + 1 < argc) {
 		char const	*addr = argv[optind + 1];
 		uintmax_t	tmp;
+
+		if (ctx.unit_glob) {
+			fprintf(stderr, "end address with unit-glob is unsupported\n");
+			return EX_USAGE;
+		}
 
 		if (!parse_uint(&tmp, addr)) {
 			fprintf(stderr, "invalid end address '%s'\n", addr);
@@ -766,10 +792,26 @@ int main(int argc, char *argv[])
 	if (rc != EX_OK)
 		goto out;
 
-	rc = deserialize_decode_range(definitions.units,
-				      definitions.num_units,
-				      addr_start, addr_end,
-				      _decode_reg, &ctx);
+	if (!ctx.unit_glob) {
+		rc = deserialize_decode_range(definitions.units,
+					      definitions.num_units,
+					      addr_start, addr_end,
+					      _decode_reg, &ctx);
+	} else {
+		for (size_t i = 0; i < definitions.num_units; ++i) {
+			struct cpu_unit const	*unit = &definitions.units[i];
+
+			if (!unit_match(unit, &ctx))
+				continue;
+
+			rc = deserialize_decode_range(unit, 1,
+						      addr_start, addr_end,
+						      _decode_reg, &ctx);
+
+			if (rc < 0)
+				break;
+		}
+	}
 
 	if (rc < 0) {
 		rc = EX_OSERR;
