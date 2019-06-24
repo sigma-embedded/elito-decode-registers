@@ -72,6 +72,7 @@ test-deserialize:	${test-deserialize_SOURCES} test-deserialize_symbols.h test-de
 	${CHECKER} $(abspath $<) --help $(TEST_OUTPUT)
 	${CHECKER} $(abspath $<) --version $(TEST_OUTPUT)
 	${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^)  ${TEST_OUTPUT}
+	${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^) @Test ${TEST_OUTPUT}
 
 ..run-test-deserialize:	test-deserialize FORCE
 	env -u TEST_HEAP_ALLOC ${CHECKER} $(abspath $<) ${TEST_OUTPUT}
