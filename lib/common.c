@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <unistd.h>
+#include <inttypes.h>
 
 #include "deserialize.h"
 
@@ -269,4 +270,101 @@ char *string_to_c(struct string const *str)
 	res[str->len] = '\0';
 
 	return res;
+}
+
+static size_t print_reg_t_col(void *dst, size_t len, reg_t const *reg,
+				   struct cpu_register const *creg)
+{
+	unsigned int	w = creg->width;
+	size_t		l;
+
+	if (w <= 8) {
+		l = snprintf(dst, len, "0x%02" PRIx8, reg->u8);
+	} else if (w <= 16) {
+		l = snprintf(dst, len, "0x%04" PRIx16, reg->u16);
+	} else if (w <= 32) {
+		l = snprintf(dst, len, "0x%04x'%04x",
+			     reg->u32 >> 16, reg->u32 & 0xffffu);
+	} else if (w <= 64) {
+		l = snprintf(dst, len, "0x%08" PRIx64 "'%08" PRIx64,
+			     reg->u64 >> 32, reg->u64 & 0xfffffffflu);
+	} else {
+		l = snprintf(dst, len, "0x");
+
+		BUG_ON((w % 8) != 0);
+
+		for (unsigned i = 0; i < w; i += 8) {
+			size_t	idx = i / 8;
+
+			if (__BYTE_ORDER != __BIG_ENDIAN)
+				idx = w / 8 - idx - 1;
+
+			if (l + 1 >= len) {
+				l = len;
+				break;
+			}
+
+			l += snprintf(dst + l, len - l, "%02x", reg->raw[idx]);
+			if (i + 8 < w && ((i + 8) % 32) == 0) {
+				strcpy(dst + l, "'");
+				l += 1;
+			}
+		}
+	}
+
+	return l;
+}
+
+static size_t print_reg_t_simple(void *dst, size_t len, reg_t const *reg,
+				 struct cpu_register const *creg)
+{
+	unsigned int	w = creg->width;
+	size_t		l;
+
+	if (w <= 8) {
+		l = snprintf(dst, len, "0x%02" PRIx8, reg->u8);
+	} else if (w <= 16) {
+		l = snprintf(dst, len, "0x%04" PRIx16, reg->u16);
+	} else if (w <= 32) {
+		l = snprintf(dst, len, "0x%08" PRIx32, reg->u32);
+	} else if (w <= 64) {
+		l = snprintf(dst, len, "0x%16" PRIx64, reg->u64);
+	} else {
+		l = snprintf(dst, len, "0x");
+
+		BUG_ON((w % 8) != 0);
+
+		for (unsigned i = 0; i < w; i += 8) {
+			size_t	idx = i / 8;
+
+			if (__BYTE_ORDER != __BIG_ENDIAN)
+				idx = w / 8 - idx - 1;
+
+			if (l + 1 >= len) {
+				l = len;
+				break;
+			}
+
+			l += snprintf(dst + l, len - l, "%02x", reg->raw[idx]);
+		}
+	}
+
+	return l;
+}
+
+char const *deserialze_print_reg_t(void *dst, size_t len, reg_t const *reg,
+				   struct cpu_register const *creg)
+{
+	size_t		l;
+
+	col_init(-1);
+
+	if (g_col_output_enabled)
+		l = print_reg_t_col(dst, len, reg, creg);
+	else
+		l = print_reg_t_simple(dst, len, reg, creg);
+
+	BUG_ON(l >= len);
+
+	return dst;
 }
