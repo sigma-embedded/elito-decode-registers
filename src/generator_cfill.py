@@ -27,7 +27,7 @@ class CodeFactory(generator.CodeFactory):
             _CodeObject.__init__(self, comment)
 
             if fmt == None:
-                fmt = "%d"
+                fmt = "%s"
 
             self.__v = v
             self.__width = width
@@ -35,8 +35,11 @@ class CodeFactory(generator.CodeFactory):
 
             if isinstance(v, generator.Symbol):
                 self.__repr = v.get_name()
-            else:
+            elif width <= 64:
                 self.__repr = fmt % v
+            else:
+                tmp = v.to_bytes((width + 7) // 8, "big", signed = is_signed)
+                self.__repr = '"%s"' % (''.join(map(lambda x: "\\%02x" % x, tmp)),)
 
             assert(isinstance(self.__repr, str))
 
