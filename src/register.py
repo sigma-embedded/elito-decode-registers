@@ -747,7 +747,10 @@ class Register(block.Block, block.Mergeable):
             self.__width)
 
     def get_regwidth(self):
-        return self.__unit.get_regwidth()
+        if self.__width is None:
+            return self.__unit.get_regwidth()
+
+        return self.__width
 
     def assign_af(self, num, fn, field):
         if not isinstance(self.__pin, _NoPin):
