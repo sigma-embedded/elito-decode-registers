@@ -126,6 +126,7 @@ struct ctx {
 	unsigned int			num_shown;
 
 	char const			*unit_glob;
+	char const			*reg_glob;
 };
 
 union uinttype {
@@ -614,6 +615,24 @@ out:
 	return rc;
 }
 
+static bool reg_match(struct cpu_register const *reg, struct ctx *ctx)
+{
+	char const		*name;
+	bool			rc;
+
+	if (!ctx->reg_glob)
+		return true;
+
+	name = string_to_c(&reg->name);
+	if (!name)
+		abort();
+
+	rc = fnmatch(ctx->reg_glob, name, FNM_CASEFOLD) == 0;
+	free((void *)name);
+
+	return rc;
+}
+
 static int _decode_reg(struct cpu_register const *reg, void *ctx_)
 {
 	char			sbuf[REGISTER_PRINT_SZ];
@@ -621,6 +640,9 @@ static int _decode_reg(struct cpu_register const *reg, void *ctx_)
 	unsigned long		addr = reg->offset + reg->unit->start;
 	reg_t			val;
 	int			rc;
+
+	if (!reg_match(reg, ctx))
+		return 0;
 
 	if (reg->unit != ctx->last_unit) {
 		col_printf("%s======================== %" STR_FMT " ==============================",
@@ -767,16 +789,13 @@ int main(int argc, char *argv[])
 		uintmax_t	tmp;
 
 		if (ctx.unit_glob) {
-			fprintf(stderr, "end address with unit-glob is unsupported\n");
-			return EX_USAGE;
-		}
-
-		if (!parse_uint(&tmp, addr)) {
+			ctx.reg_glob = addr;
+		} else if (!parse_uint(&tmp, addr)) {
 			fprintf(stderr, "invalid end address '%s'\n", addr);
 			return EX_USAGE;
+		} else {
+			addr_end = tmp;
 		}
-
-		addr_end = tmp;
 	}
 
 	rc = definitions_read(&definitions, definitions_file);
