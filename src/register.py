@@ -147,6 +147,9 @@ class Enum(block.Block, block.Removable):
         reg = self.__field.get_register()
         reg.assign_af(self.__value, af, self.__field)
 
+    def _finalize(self):
+        pass
+
     def get_value(self):
         return self.__value
 
@@ -441,6 +444,8 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
     def update(self, other):
         assert(isinstance(other, Field))
+        assert(not self.is_finalized())
+        assert(not other.is_finalized())
 
         self.__type = self.update_attr(self.__type, other.__type)
         self.__bits = self.update_attr(self.__bits, other.__bits)
@@ -590,6 +595,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         assert(not self.is_removed())
         assert(self.__type != None)
         assert(self.__type != self.TYPE_RESERVED)
+        assert(self.is_finalized())
 
         code = top.create_block('%s field' % self.__id)
 
@@ -621,6 +627,9 @@ class Field(block.Block, block.Mergeable, block.Removable):
     def _merge(self, base):
         assert(False)
         # TODO
+
+    def _finalize(self):
+        pass
 
 
 class Register(block.Block, block.Mergeable):
@@ -804,6 +813,8 @@ class Register(block.Block, block.Mergeable):
     def _merge(self, reg):
         assert(isinstance(reg, Register))
         #print("Register: merging %s into %s" % (reg.get_id(), self.get_id()))
+        assert(not self.is_finalized())
+        assert(reg.is_finalized())
 
         for f in reg.get_fields().values():
             id = f.get_id()
@@ -821,6 +832,8 @@ class Register(block.Block, block.Mergeable):
         assert(reg.__pin == None)
 
     def _merge_pre(self):
+        assert(not self.is_finalized())
+
         fields = self.filter(lambda f: isinstance(f, Field))
         fields = block.Mergeable.create_container(fields, lambda x: x.get_id())
 
@@ -829,6 +842,13 @@ class Register(block.Block, block.Mergeable):
             f.merge(fields)
 
         self.__fields = fields
+
+    def _merge_post(self):
+        self.finalize()
+
+    def _finalize(self):
+        for f in self.__fields.values():
+            f.finalize()
 
     def get_fields(self):
         return self.__fields

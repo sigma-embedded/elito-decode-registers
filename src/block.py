@@ -115,6 +115,7 @@ class Block(MultiParser, metaclass=abc.ABCMeta):
         self.__i = 0
         self.__parent = parent
         self.__is_valid = is_valid
+        self.__is_finalized = False
         self.children = []
 
     def is_valid(self):
@@ -208,9 +209,24 @@ class Block(MultiParser, metaclass=abc.ABCMeta):
     def filter(self, fn):
         return filter(lambda r: fn(r) and r.is_valid(), self.children)
 
+    def is_finalized(self):
+        return self.__is_finalized
+
+    def finalize(self):
+        if not self.__is_finalized:
+            self._finalize()
+            self.__is_finalized = True
+
+    @abc.abstractmethod
+    def _finalize(self):
+        pass
+
 class Top(Block):
     def __init__(self):
         Block.__init__(self, None, True)
+
+    def _finalize(self):
+        pass
 
 class Mergeable(metaclass=abc.ABCMeta):
     class __Parser(Parser):
