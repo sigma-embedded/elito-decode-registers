@@ -51,6 +51,68 @@
 	} while (0)
 #endif
 
+static regmax_t get_masked_value(reg_t const *v_ext,
+				 reg_t const *mask_ext,
+				 struct cpu_register const *reg)
+
+{
+	regmax_t	res = 0;
+	unsigned int	pos = 0;
+	unsigned int	width = reg->width;
+
+	BUG_ON(!v_ext);
+	BUG_ON(width > 8 * sizeof *mask_ext);
+	BUG_ON(width % 8 != 0);
+
+	width = (width + 7) / 8;
+
+	for (size_t i = 0; i < width; i += sizeof(regcalc_t)) {
+		regcalc_t	v = v_ext->reg_raw[i];
+		regcalc_t	mask = mask_ext->calc_raw[i];
+
+		while (mask) {
+			int	p = __builtin_ffs(mask) - 1;
+
+			res  |= ((v >> p) & 1) << pos;
+			++pos;
+
+			mask &= ~(1 << p);
+		}
+	}
+
+	BUG_ON(pos > 8 * sizeof res);
+
+	return res;
+}
+
+unsigned int deserialize_popcount(reg_t const *reg, unsigned int width)
+{
+	unsigned int	res = 0;
+
+	BUG_ON(width > 8 * sizeof *reg);
+	BUG_ON(width % 8 != 0);
+
+	width = (width + 7) / 8;
+
+	for (size_t i = 0; i < width; ++i)
+		res += __builtin_popcount(reg->raw[i]);
+
+	return res;
+}
+
+static bool test_bit(reg_t const *reg, unsigned int bit)
+{
+	regmax_t		v;
+	regmax_t		msk = 1u;
+
+	BUG_ON(bit > sizeof reg->reg_raw * 8);
+
+	v = reg->reg_raw[bit / 8 / sizeof v];
+	msk <<= bit % (8 / sizeof v);
+
+	return (v & msk) != 0;
+}
+
 inline static void *deserialize_calloc(size_t cnt, size_t len)
 {
 	if (cnt != 0 && SIZE_MAX/cnt <= len) {
@@ -132,7 +194,49 @@ static bool pop_u8(uint8_t *v, void const **buf, size_t *sz)
 	return pop_mem(v, sizeof *v, buf, sz);
 }
 
-static bool pop_uint_var(uintmax_t *s, unsigned int order,
+static void byte_revert(void *buf_, size_t len)
+{
+	unsigned char	*buf = buf_;
+	size_t		a = 0;
+	size_t		b = len;
+
+	while (a + 1u < b) {
+		unsigned char	tmp;
+
+		--b;
+
+		tmp    = buf[a];
+		buf[a] = buf[b];
+		buf[b] = tmp;
+
+		++a;
+	}
+}
+
+static bool pop_reg(reg_t *reg, unsigned int width,
+		    void const **buf, size_t *sz)
+{
+	switch (width) {
+	case 8:
+		return pop_u8(&reg->u8, buf, sz);
+	case 16:
+		return pop_u16(&reg->u16, buf, sz);
+	case 32:
+		return pop_u32(&reg->u32, buf, sz);
+	}
+
+	BUG_ON(width % 8 != 0);
+
+	if (!pop_mem(reg->raw, (width + 7) / 8, buf, sz))
+		return false;
+
+	if (!!STORE_BE != !!(__BYTE_ORDER == __BIG_ENDIAN))
+		byte_revert(reg->raw, width / 8);
+
+	return true;
+}
+
+static bool pop_uint_var(regmax_t *s, unsigned int order,
 			 void const **buf, size_t *sz)
 {
 	if (order <= 8) {
@@ -164,19 +268,7 @@ static bool pop_uint_var(uintmax_t *s, unsigned int order,
 static bool pop_size_t_var(size_t *s, unsigned int order,
 			   void const **buf, size_t *sz)
 {
-	uintmax_t	tmp;
-
-	if (!pop_uint_var(&tmp, order, buf, sz))
-		return false;
-
-	*s = tmp;
-	return true;
-}
-
-static bool pop_reg_t_var(reg_t *s, unsigned int order,
-			  void const **buf, size_t *sz)
-{
-	uintmax_t	tmp;
+	regmax_t	tmp;
 
 	if (!pop_uint_var(&tmp, order, buf, sz))
 		return false;
@@ -248,24 +340,15 @@ static bool pop_uchar(unsigned char *c, void const **buf, size_t *sz)
 	return true;
 }
 
-static bool pop_reg_t(reg_t *r, void const **buf, size_t *sz)
-{
-	uint32_t	tmp;
-
-	if (!pop_u32(&tmp, buf, sz))
-		return false;
-
-	*r = tmp;
-	return true;
-}
-
 static void _deserialize_dump_bool(struct cpu_regfield const *fld_,
-				   uintmax_t v, void *priv)
+				   reg_t const *v, void *priv)
 {
 	struct cpu_regfield_bool const	*fld =
 		container_of(fld_, struct cpu_regfield_bool const, reg);
 
-	deserialize_dump_bool(fld, !!(v & (1 << fld->bit)), priv);
+	BUG_ON(fld->bit >= fld->reg.reg->width);
+
+	deserialize_dump_bool(fld, test_bit(v, fld->bit), priv);
 }
 
 static bool _unused_ pop_cpu_regfield_bool(struct cpu_regfield_bool **fld,
@@ -283,46 +366,30 @@ static bool _unused_ pop_cpu_regfield_bool(struct cpu_regfield_bool **fld,
 	return true;
 }
 
-static uintmax_t get_masked_value(uintmax_t v, reg_t mask)
-{
-	uintmax_t	res = 0;
-	unsigned int	pos = 0;
-
-	while (mask) {
-		int	p = __builtin_ffs(mask) - 1;
-
-		res  |= ((v >> p) & 1) << pos;
-		++pos;
-
-		mask &= ~(1 << p);
-	}
-
-	return res;
-}
-
 static void _deserialize_dump_frac(struct cpu_regfield const *fld_,
-				   uintmax_t v, void *priv)
+				   reg_t const *v, void *priv)
 {
 	struct cpu_regfield_frac const	*fld =
 		container_of(fld_, struct cpu_regfield_frac const, reg);
 
-	uintmax_t		parts[2];
+	regmax_t		parts[2];
 
-	parts[0] = get_masked_value(v, fld->int_part);
-	parts[1] = get_masked_value(v, fld->frac_part);
+	parts[0] = get_masked_value(v, &fld->int_part, fld_->reg);
+	parts[1] = get_masked_value(v, &fld->frac_part, fld_->reg);
 
 	deserialize_dump_frac(fld, parts[0], parts[1], priv);
 }
 
 static bool _unused_ pop_cpu_regfield_frac(struct cpu_regfield_frac **fld,
+					   struct cpu_register const *reg,
 					   void const **buf, size_t *sz)
 {
 	*fld = deserialize_alloc(sizeof **fld);
 	if (!(*fld))
 		return false;
 
-	if (!pop_u32(&(*fld)->int_part, buf, sz) ||
-	    !pop_u32(&(*fld)->frac_part, buf, sz))
+	if (!pop_reg(&(*fld)->int_part,  reg->width, buf, sz) ||
+	    !pop_reg(&(*fld)->frac_part, reg->width, buf, sz))
 		return false;
 
 	(*fld)->reg.fn = _deserialize_dump_frac;
@@ -331,7 +398,7 @@ static bool _unused_ pop_cpu_regfield_frac(struct cpu_regfield_frac **fld,
 }
 
 static void _deserialize_dump_reserved(struct cpu_regfield const *fld_,
-				       uintmax_t v, void *priv)
+				       reg_t const *v, void *priv)
 {
 	struct cpu_regfield_reserved const	*fld =
 		container_of(fld_, struct cpu_regfield_reserved const, reg);
@@ -340,13 +407,14 @@ static void _deserialize_dump_reserved(struct cpu_regfield const *fld_,
 }
 
 static bool _unused_ pop_cpu_regfield_reserved(struct cpu_regfield_reserved **fld,
+					       struct cpu_register const *reg,
 					       void const **buf, size_t *sz)
 {
 	*fld = deserialize_alloc(sizeof **fld);
 	if (!(*fld))
 		return false;
 
-	if (!pop_reg_t(&(*fld)->bitmask, buf, sz))
+	if (!pop_reg(&(*fld)->bitmask, reg->width, buf, sz))
 		return false;
 
 	(*fld)->reg.fn = _deserialize_dump_reserved;
@@ -355,7 +423,7 @@ static bool _unused_ pop_cpu_regfield_reserved(struct cpu_regfield_reserved **fl
 }
 
 static void _deserialize_dump_enum(struct cpu_regfield const *fld_,
-				   uintmax_t v, void *priv)
+				   reg_t const *v, void *priv)
 {
 	struct cpu_regfield_enum const	*fld =
 		container_of(fld_, struct cpu_regfield_enum const, reg);
@@ -363,7 +431,9 @@ static void _deserialize_dump_enum(struct cpu_regfield const *fld_,
 	unsigned int				idx = 0;
 	struct cpu_regfield_enum_val const	*val = NULL;
 
-	idx = get_masked_value(v, fld->bitmask);
+	BUG_ON(!v);
+
+	idx = get_masked_value(v, &fld->bitmask, fld->reg.reg);
 
 	for (size_t i = 0; i < fld->num_enums; ++i) {
 		if (idx == fld->enums[i].val) {
@@ -379,21 +449,22 @@ static bool pop_cpu_regfield_enum_val(struct cpu_regfield_enum_val *eval,
 				      unsigned int order,
 				      void const **buf, size_t *sz)
 {
-	return (pop_reg_t_var(&eval->val, order, buf, sz) &&
+	return (pop_uint_var(&eval->val, order, buf, sz) &&
 		pop_string(&eval->name, buf, sz));
 }
 
 static bool _unused_ pop_cpu_regfield_enum(struct cpu_regfield_enum **fld,
+					   struct cpu_register const *reg,
 					   void const **buf, size_t *sz)
 {
 	reg_t		bitmask;
 	size_t		num_enums;
 	unsigned int	order;
 
-	if (!pop_reg_t(&bitmask, buf, sz))
+	if (!pop_reg(&bitmask, reg->width, buf, sz))
 		return false;
 
-	order = __builtin_popcount(bitmask);
+	order = deserialize_popcount(&bitmask, reg->width);
 
 	if (!pop_size_t_var(&num_enums, order, buf, sz))
 		return false;
@@ -418,25 +489,23 @@ static bool _unused_ pop_cpu_regfield_enum(struct cpu_regfield_enum **fld,
 }
 
 static void _deserialize_dump_int(struct cpu_regfield const *fld_,
-				  uintmax_t v_, void *priv)
+				  reg_t const *v, void *priv)
 {
 	struct cpu_regfield_int const	*fld =
 		container_of(fld_, struct cpu_regfield_int const, reg);
-	uint32_t			v = v_;
+	regmax_t			tmp;
 
-	BUG_ON(fld->val == 0);
-
-	v &= fld->val;
-	v >>= (ffs(fld->val) - 1);
+	tmp = get_masked_value(v, &fld->bitmask, fld->reg.reg);
 
 	if (fld->is_signed)
-		/* TODO: fixed uintmax_t -> signed int conversion */
-		deserialize_dump_sint(fld, (signed int)(v), priv);
+		/* TODO: fix regmax_t -> signed int conversion */
+		deserialize_dump_sint(fld, (signed long)(tmp), priv);
 	else
-		deserialize_dump_uint(fld, (unsigned int)(v), priv);
+		deserialize_dump_uint(fld, (regmax_t)(tmp), priv);
 }
 
 static bool _unused_ pop_cpu_regfield_int(struct cpu_regfield_int **fld,
+					  struct cpu_register const *reg,
 					  void const **buf, size_t *sz,
 					  bool is_signed)
 {
@@ -444,7 +513,7 @@ static bool _unused_ pop_cpu_regfield_int(struct cpu_regfield_int **fld,
 	if (!(*fld))
 		return false;
 
-	if (!pop_u32(&(*fld)->val, buf, sz))
+	if (!pop_reg(&(*fld)->bitmask, reg->width, buf, sz))
 		return false;
 
 	(*fld)->is_signed = is_signed;
@@ -472,12 +541,13 @@ static bool _unused_ is_signed_type(uint32_t type)
 }
 
 static bool pop_cpu_regfield(struct cpu_regfield **field,
+			     struct cpu_register const *reg,
 			     void const **buf, size_t *sz)
 {
 	struct string		id;
 	struct string		name;
 	uint8_t			type;
-	uintmax_t		reg_flags;
+	regmax_t		reg_flags;
 
 	if (!pop_uint_var(&reg_flags, 2, buf, sz) ||
 	    !pop_string(&id, buf, sz) ||
@@ -502,7 +572,7 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 	case TYPE_ENUM: {
 		struct cpu_regfield_enum	*fld;
 
-		if (!pop_cpu_regfield_enum(&fld, buf, sz))
+		if (!pop_cpu_regfield_enum(&fld, reg, buf, sz))
 			return false;
 
 		*field = &fld->reg;
@@ -514,7 +584,7 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 	case TYPE_FRAC: {
 		struct cpu_regfield_frac	*fld;
 
-		if (!pop_cpu_regfield_frac(&fld, buf, sz))
+		if (!pop_cpu_regfield_frac(&fld, reg, buf, sz))
 			return false;
 
 		*field = &fld->reg;
@@ -532,7 +602,7 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 	{
 		struct cpu_regfield_int		*fld;
 
-		if (!pop_cpu_regfield_int(&fld, buf, sz,
+		if (!pop_cpu_regfield_int(&fld, reg, buf, sz,
 					  is_signed_type(type)))
 			return false;
 
@@ -545,7 +615,7 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 	case TYPE_RESERVED: {
 		struct cpu_regfield_reserved	*fld;
 
-		if (!pop_cpu_regfield_reserved(&fld, buf, sz))
+		if (!pop_cpu_regfield_reserved(&fld, reg, buf, sz))
 			return false;
 
 		*field = &fld->reg;
@@ -558,6 +628,7 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 		return false;
 	}
 
+	(*field)->reg = reg;
 	(*field)->flags = reg_flags;
 	(*field)->id = id;
 	(*field)->name = name;
@@ -566,11 +637,11 @@ static bool pop_cpu_regfield(struct cpu_regfield **field,
 }
 
 static bool pop_cpu_register(struct cpu_register *reg,
-			      void const **buf, size_t *sz)
+			     void const **buf, size_t *sz)
 {
 	size_t				num_fields;
 	struct cpu_regfield const	**fields;
-	uintmax_t			reg_flags;
+	regmax_t			reg_flags;
 
 	if (!pop_uintptr_t(&reg->offset, buf, sz) ||
 	    !pop_u8(&reg->width, buf, sz) ||
@@ -579,6 +650,8 @@ static bool pop_cpu_register(struct cpu_register *reg,
 	    !pop_string(&reg->name, buf,sz) ||
 	    !pop_size_t(&num_fields, buf, sz))
 		return false;
+
+	BUG_ON((unsigned int)reg->width > sizeof(reg_t) * 8);
 
 	reg->flags = reg_flags;
 
@@ -589,10 +662,9 @@ static bool pop_cpu_register(struct cpu_register *reg,
 	for (size_t i = 0; i < num_fields; ++i) {
 		struct cpu_regfield	*field;
 
-		if (!pop_cpu_regfield(&field, buf, sz))
+		if (!pop_cpu_regfield(&field, reg, buf, sz))
 			return false;
 
-		field->reg = reg;
 		fields[i]  = field;
 	}
 
@@ -651,7 +723,7 @@ bool deserialize_cpu_units(struct cpu_unit **units, size_t *num,
 }
 
 void deserialize_decode_reg(struct cpu_register const *reg,
-			    uintmax_t val, void *priv)
+			    reg_t const *val, void *priv)
 {
 	for (size_t i = 0; i < reg->num_fields; ++i) {
 		struct cpu_regfield const	*fld = reg->fields[i];
@@ -661,7 +733,7 @@ void deserialize_decode_reg(struct cpu_register const *reg,
 }
 
 bool deserialize_decode(struct cpu_unit const units[], size_t unit_cnt,
-			uintptr_t addr, uintmax_t val, void *priv)
+			uintptr_t addr, reg_t const *val, void *priv)
 {
 	bool	found = false;
 

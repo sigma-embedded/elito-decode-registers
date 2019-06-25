@@ -21,11 +21,43 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-typedef uint32_t		reg_t;
+#ifndef REGISTER_MAX_REGSIZE
+#  define REGISTER_MAX_REGSIZE	(256u)
+#endif
+
+#ifdef REGISTER_REG_T
+typedef REGISTER_DEF_T		regmax_t;
+#else
+typedef uintmax_t		regmax_t;
+#endif
+
+#ifdef REGISTER_CALC_T
+typedef REGISTER_CALC_T		regcalc_t;
+#else
+typedef regmax_t		regcalc_t;
+#endif
+
+union _reg {
+	uint8_t		u8;
+	uint16_t	u16;
+	uint32_t	u32;
+	regmax_t	max;
+
+#ifndef REGISTER_DISABLE_U64
+	uint64_t	u64;
+#endif
+
+	uint8_t		raw[REGISTER_MAX_REGSIZE / 8];
+	regmax_t	reg_raw[REGISTER_MAX_REGSIZE / 8 / sizeof(regmax_t)];
+	regcalc_t	calc_raw[REGISTER_MAX_REGSIZE / 8 / sizeof(regcalc_t)];
+};
+
+typedef union _reg		reg_t;
 
 struct cpu_regfield;
 typedef void			(*deserialize_decoder_fn)(
-	struct cpu_regfield const *, uintmax_t v, void *priv);
+	struct cpu_regfield const *, reg_t const *v, void *priv)
+	__attribute__((__nonnull__(1,2)));
 
 struct string {
 	size_t			len;
@@ -82,7 +114,7 @@ struct cpu_regfield_frac {
 
 struct cpu_regfield_enum_val {
 	struct string			name;
-	reg_t				val;
+	regmax_t			val;
 };
 
 struct cpu_regfield_enum {
@@ -100,7 +132,7 @@ struct cpu_regfield_reserved {
 
 struct cpu_regfield_int {
 	struct cpu_regfield		reg;
-	reg_t				val;
+	reg_t				bitmask;
 	bool				is_signed;
 };
 
@@ -111,14 +143,16 @@ extern void deserialize_dump_enum(struct cpu_regfield_enum const *fld,
 				  struct cpu_regfield_enum_val const *val,
 				  size_t idx, void *priv);
 extern void deserialize_dump_frac(struct cpu_regfield_frac const *fld,
-				  reg_t int_part, reg_t frac_part,
+				  regmax_t int_part, regmax_t frac_part,
 				  void *priv);
 extern void deserialize_dump_uint(struct cpu_regfield_int const *fld,
-				  unsigned int val, void *priv);
+				  regmax_t val, void *priv);
 extern void deserialize_dump_sint(struct cpu_regfield_int const *fld,
-				  signed int val, void *priv);
+				  signed long val, void *priv);
 extern void deserialize_dump_reserved(struct cpu_regfield_reserved const *fld,
-				      reg_t v, void *priv);
+				      reg_t const *v, void *priv);
+
+unsigned int deserialize_popcount(reg_t const *reg, unsigned int width);
 
 inline static size_t deserialize_get_sz(void const *start, size_t len,
 					void const *end)
@@ -135,10 +169,10 @@ bool deserialize_cpu_units(struct cpu_unit **unit, size_t *cnt,
 			   void const **buf, size_t *sz);
 
 void deserialize_decode_reg(struct cpu_register const *reg,
-			    uintmax_t val, void *priv);
+			    reg_t const *val, void *priv);
 
 bool deserialize_decode(struct cpu_unit const units[], size_t unit_cnt,
-			uintptr_t addr, uintmax_t val, void *priv);
+			uintptr_t addr, reg_t const *val, void *priv);
 
 int deserialize_decode_range(struct cpu_unit const units[], size_t unit_cnt,
 			     uintptr_t start_addr, uintptr_t end_addr,
