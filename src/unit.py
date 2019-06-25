@@ -198,19 +198,23 @@ class Unit(block.Block, block.Mergeable):
         regs = block.Mergeable.create_container(top.get_registers(),
                                                 lambda x: x.get_id(False))
 
-        for r in regs.values():
-            r.merge(regs)
-
         self.__registers = regs
+
+    def _finalize(self):
+        for r in self.__registers.values():
+            r.finalize()
 
     def _merge_pre(self):
         assert(self.__registers != None)
+        assert(not self.is_finalized())
 
-        pass
+        for r in self.__registers.values():
+            r.merge(self.__registers)
 
     def _merge(self, base):
         assert(isinstance(base, Unit))
-        #print("Unit: merging %s into %s" % (base.get_id(), self.get_id()))
+        assert(not self.is_finalized())
+        assert(base.is_finalized())
 
         for r in base.__registers.values():
             id = r.get_id(False)
@@ -223,6 +227,9 @@ class Unit(block.Block, block.Mergeable):
 
         #print(self, base)
         pass
+
+    def _merge_post(self):
+        self.finalize()
 
     def generate_code(self, top):
         if not self.__is_enabled:
