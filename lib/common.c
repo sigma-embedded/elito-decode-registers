@@ -78,7 +78,10 @@ void deserialize_dump_enum(struct cpu_regfield_enum const *fld,
 void deserialize_dump_sint(struct cpu_regfield_int const *fld,
 			   signed long v, void *priv_)
 {
-	int			w = (fld->reg.reg->width + 3)/ 4;
+	int			w;
+
+	w = deserialize_popcount(&fld->bitmask, fld->reg.reg->width);
+	w = (w + 3) / 4;
 
 	dump_field_start(&fld->reg);
 	switch (fld->reg.flags & FIELD_FLAG_DISPLAY_msk) {
@@ -97,7 +100,10 @@ void deserialize_dump_uint(struct cpu_regfield_int const *fld,
 			   regmax_t v_, void *priv_)
 {
 	unsigned long long	v = v_;
-	int			w = (fld->reg.reg->width + 3)/ 4;
+	int			w;
+
+	w = deserialize_popcount(&fld->bitmask, fld->reg.reg->width);
+	w = (w + 3) / 4;
 
 	dump_field_start(&fld->reg);
 	switch (fld->reg.flags & FIELD_FLAG_DISPLAY_msk) {
