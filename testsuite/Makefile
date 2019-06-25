@@ -66,7 +66,7 @@ test-deserialize:	${test-deserialize_SOURCES} test-deserialize_symbols.h test-de
 %_stream.h:	%_stream.bin
 	$(XXD) -i < $< > $@
 
-.run-tests:	..run-test-decode ..run-test-deserialize
+.run-tests:	..run-test-deserialize ..run-test-decode
 
 ..run-test-decode:	../decode-device test-deserialize_stream.bin FORCE
 	${CHECKER} $(abspath $<) --help $(TEST_OUTPUT)
