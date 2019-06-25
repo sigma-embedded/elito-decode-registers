@@ -7,6 +7,8 @@
 
 #include "common.h"
 
+#include DESERIALIZE_SYMBOLS
+
 #define COL_ADDR	"\033[31m"	/* red */
 #define COL_REGNAME	"\033[1m"	/* bold */
 #define COL_RAWVAL	"\033[34m"	/* blue */
@@ -67,8 +69,18 @@ void deserialize_dump_enum(struct cpu_regfield_enum const *fld,
 void deserialize_dump_sint(struct cpu_regfield_int const *fld,
 			   signed long v, void *priv_)
 {
+	int			w = (fld->reg.reg->width + 3)/ 4;
+
 	dump_field_start(&fld->reg);
-	col_printf("%ld", v);
+	switch (fld->reg.flags & FIELD_FLAG_DISPLAY_msk) {
+	case FIELD_FLAG_DISPLAY_HEX:
+		col_printf("0x%.*lx", w, v);
+		break;
+	case FIELD_FLAG_DISPLAY_DEC:
+	default:
+		col_printf("%ld", v);
+		break;
+	}
 	dump_field_end(&fld->reg);
 }
 
@@ -76,9 +88,18 @@ void deserialize_dump_uint(struct cpu_regfield_int const *fld,
 			   regmax_t v_, void *priv_)
 {
 	unsigned long long	v = v_;
+	int			w = (fld->reg.reg->width + 3)/ 4;
 
 	dump_field_start(&fld->reg);
-	col_printf("%llu", v);
+	switch (fld->reg.flags & FIELD_FLAG_DISPLAY_msk) {
+	case FIELD_FLAG_DISPLAY_HEX:
+		col_printf("0x%.*llx", w, v);
+		break;
+	case FIELD_FLAG_DISPLAY_DEC:
+	default:
+		col_printf("%llu", v);
+		break;
+	}
 	dump_field_end(&fld->reg);
 }
 

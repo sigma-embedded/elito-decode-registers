@@ -1,5 +1,8 @@
 #define FIELD_FLAG_ACCESS_READ					1		/* read access */
 #define FIELD_FLAG_ACCESS_WRITE					2		/* write access */
+#define FIELD_FLAG_DISPLAY_HEX                                  4               /* display as hex */
+#define FIELD_FLAG_DISPLAY_DEC                                  8               /* display as decimal */
+#define FIELD_FLAG_DISPLAY_msk                                  28              /* display fmt mask */
 #define REGISTER_FLAG_ACCESS_READ				1		/* read access */
 #define REGISTER_FLAG_ACCESS_WRITE				2		/* write access */
 #define TYPE_ENUM						1		/* 'enum' type */
