@@ -266,7 +266,8 @@ class Field(block.Block, block.Mergeable, block.Removable):
             return res
 
         def generate_code(self, code, desc):
-            code.add_uint(self.get_mask(), self.__width, desc)
+            code.add_xint(self.get_mask(), self.__width,
+                          "%s %s/%s" % (desc, self.__v, self.__width))
 
         def __eq__(self, a):
             if a == None:
@@ -528,7 +529,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         top.add_type(symbol, None)
 
         code   = top.create_block('enum')
-        self.__bits.generate_code(code, "bitmask (%s)" % self.__bits)
+        self.__bits.generate_code(code, "bitmask")
 
         if len(self.__bits) <= 8:
             m = code.add_u8
@@ -569,8 +570,8 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
         top.add_symbol(symbol)
         top.add_type(symbol, None)
-        self.__frac[0].generate_code(top, "integer part (%s)" % self.__frac[0])
-        self.__frac[1].generate_code(top, "frac part (%s)" % self.__frac[1])
+        self.__frac[0].generate_code(top, "integer part")
+        self.__frac[1].generate_code(top, "frac part")
 
         return top
 
@@ -581,7 +582,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
         top.add_symbol(symbol)
         top.add_type(symbol, None)
-        top.add_x32(self.__bits.get_mask(), "sint (%s)" % self.__bits)
+        self.__bits.generate_code(top, "sint")
 
         return top
 
@@ -592,7 +593,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
         top.add_symbol(symbol)
         top.add_type(symbol, None)
-        self.__bits.generate_code(top, "uint (%s)" % self.__bits)
+        self.__bits.generate_code(top, "uint")
 
         return top
 
