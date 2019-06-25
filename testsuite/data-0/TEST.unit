@@ -48,3 +48,7 @@
   @reg  0x00 0x100
   @regwidth 8 8 BE
   @registers 8BIT/
+
+@unit VALTEST
+  @reg 0x1000 32
+  @registers VALTEST/

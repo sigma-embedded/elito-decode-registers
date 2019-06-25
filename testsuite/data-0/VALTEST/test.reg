@@ -1,0 +1,23 @@
+@register TEST-BOOL-0
+  @addr 0x00
+  @field BOOL-0_0
+     @boolean 0
+  @field BOOL-0_1
+     @boolean 1
+  @field BOOL-0_8
+     @boolean 8
+  @field BOOL-0_15
+     @boolean 15
+  @field BOOL-0_31
+     @boolean 31
+
+@register TEST-UINT-0
+  @addr 0x00
+  @field UINT-0_0
+     @uint 3-0
+  @field UINT-0_1
+     @uint 9-7
+  @field UINT-0_2
+     @uhex 31-0
+  @field UINT-0_3
+     @uhex 15-12,7-4
