@@ -160,20 +160,20 @@ static void htole(union uinttype *dst, uintmax_t src, unsigned int width)
 	}
 }
 
-static void letoh(uintmax_t *dst, union uinttype const *src, unsigned int width)
+static void letor(reg_t *dst, union uinttype const *src, unsigned int width)
 {
 	switch (width) {
 	case 8:
-		*dst = src->u8;
+		dst->u8 = src->u8;
 		break;
 	case 16:
-		*dst = le16toh(src->u16);
+		dst->u16 = le16toh(src->u16);
 		break;
 	case 32:
-		*dst = le16toh(src->u32);
+		dst->u32 = le16toh(src->u32);
 		break;
 	case 64:
-		*dst = le16toh(src->u64);
+		dst->u64 = le16toh(src->u64);
 		break;
 	default:
 		abort();
@@ -201,20 +201,20 @@ static void htobe(union uinttype *dst, uintmax_t src, unsigned int width)
 }
 
 
-static void betoh(uintmax_t *dst, union uinttype const *src, unsigned int width)
+static void betor(reg_t *dst, union uinttype const *src, unsigned int width)
 {
 	switch (width) {
 	case 8:
-		*dst = src->u8;
+		dst->u8 = src->u8;
 		break;
 	case 16:
-		*dst = be16toh(src->u16);
+		dst->u16 = be16toh(src->u16);
 		break;
 	case 32:
-		*dst = be16toh(src->u32);
+		dst->u32 = be16toh(src->u32);
 		break;
 	case 64:
-		*dst = be16toh(src->u64);
+		dst->u64 = be16toh(src->u64);
 		break;
 	default:
 		abort();
@@ -273,10 +273,10 @@ static int device_i2c_read(struct device *dev, uintptr_t addr,
 
 	switch (i2c->endianess) {
 	case ENDIAN_LITLLE:
-		letoh(val, &tmp, width);
+		letor(val, &tmp, width);
 		break;
 	case ENDIAN_BIG:
-		betoh(val, &tmp, width);
+		betor(val, &tmp, width);
 		break;
 	default:
 		abort();
