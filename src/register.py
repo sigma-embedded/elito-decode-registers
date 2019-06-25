@@ -367,6 +367,16 @@ class Field(block.Block, block.Mergeable, block.Removable):
     def __str__(self):
         return "FIELD <%x>: %s (on %s)" % (id(self), self.__id, self.__register)
 
+    def clone(self, top):
+        res = Field(top, self.__id, self.is_valid)
+        res.__type = self.__type
+        res.__name = self.__name
+        res.__bits = self.__bits
+        res.__desc = self.__desc
+        res.__frac = self.__frac
+        res.__flags = self.__flags
+        return res
+
     def _assign_description(self, desc):
         self.__desc = desc
 
@@ -838,6 +848,7 @@ class Register(block.Block, block.Mergeable):
         assert(reg.is_finalized())
 
         for f in reg.get_fields().values():
+            f  = f.clone(self)
             id = f.get_id()
             if id in self.__fields:
                 self.__fields[id].update(f)
