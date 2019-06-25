@@ -68,6 +68,7 @@ class Unit(block.Block, block.Mergeable):
                 '@registers' : 1,
                 '@disabled' : 0,
                 '@name' : 1,
+                '@description' : 1,
                 '@reg' : 2,
                 '@regwidth' : [1, 3],
             }
@@ -91,6 +92,8 @@ class Unit(block.Block, block.Mergeable):
                 self.o._assign_name(l[1])
             elif tag == '@reg':
                 self.o._assign_memory(int(l[1], 0), int(l[2], 0))
+            elif tag == '@description':
+                pass
             elif tag == '@regwidth':
                 self.o._assign_regwidth(int(l[1]))
                 if len(l) > 2:
