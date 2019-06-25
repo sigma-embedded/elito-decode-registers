@@ -569,10 +569,8 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
         top.add_symbol(symbol)
         top.add_type(symbol, None)
-        top.add_x32(self.__frac[0].get_mask(),
-                    "integer part (%s)" % self.__frac[0])
-        top.add_x32(self.__frac[1].get_mask(),
-                    "frac part (%s)" % self.__frac[1])
+        self.__frac[0].generate_code(top, "integer part (%s)" % self.__frac[0])
+        self.__frac[1].generate_code(top, "frac part (%s)" % self.__frac[1])
 
         return top
 
@@ -594,12 +592,12 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
         top.add_symbol(symbol)
         top.add_type(symbol, None)
-        top.add_x32(self.__bits.get_mask(), "uint (%s)" % self.__bits)
+        self.__bits.generate_code(top, "uint (%s)" % self.__bits)
 
         return top
 
     @staticmethod
-    def generate_code_reserved(top, msk):
+    def generate_code_reserved(top, msk, width):
         symbol = generator.Symbol("TYPE_RESERVED", Field.TYPE_RESERVED,
                                   "'reserved' type")
 
@@ -611,7 +609,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
         code.add_symbol(symbol)
         code.add_type(symbol, None)
-        code.add_u32(msk, "bitmask")
+        code.add_uint(msk, width, "bitmask")
 
     def generate_code(self, top):
         assert(not self.is_removed())
