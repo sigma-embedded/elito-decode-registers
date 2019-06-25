@@ -1,0 +1,17 @@
+@register A
+  @addr 0x0000
+  @field LONG
+    @uint 79-10
+  @field DESC
+    @bits 99-96 1
+    @enum 0 "e"
+    @enum 1 "b"
+  @field x
+    @bits 105
+    @reserved
+  @field y
+    @boolean 106
+  @field z
+    @frac 120-115 114-110
+  @field B0
+    @boolean 0
