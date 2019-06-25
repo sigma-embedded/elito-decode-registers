@@ -12,6 +12,7 @@
 #define COL_ADDR	"\033[31m"	/* red */
 #define COL_REGNAME	"\033[1m"	/* bold */
 #define COL_RAWVAL	"\033[34m"	/* blue */
+#define COL_ACCESS	"\033[1m"	/* bold */
 #define COL_OFF		"\033[0;39m"
 
 #define COL_TRUE	"\033[94m"
@@ -29,6 +30,14 @@ static void dump_field_start(struct cpu_regfield const *fld)
 
 static void dump_field_end(struct cpu_regfield const *fld)
 {
+	switch (fld->flags & FIELD_FLAG_ACCESS_msk) {
+	case FIELD_FLAG_ACCESS_READ:
+		col_printf(" (&Aro&#)");
+		break;
+	case FIELD_FLAG_ACCESS_WRITE:
+		col_printf(" (&Awo&#)");
+		break;
+	}
 }
 
 void deserialize_dump_frac(struct cpu_regfield_frac const *fld,
@@ -200,6 +209,11 @@ void col_printf(char const *fmt, ...)
 			case 'N':
 				if (g_col_output_enabled)
 					strbuf_addstr(&fmt_buf, COL_REGNAME);
+				break;
+
+			case 'A':
+				if (g_col_output_enabled)
+					strbuf_addstr(&fmt_buf, COL_ACCESS);
 				break;
 
 			case '~':
