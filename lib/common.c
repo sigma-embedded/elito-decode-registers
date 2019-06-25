@@ -160,7 +160,7 @@ static int		g_col_output_enabled = -1;
 
 void col_init(int v)
 {
-	if (g_col_output_enabled == -1) {
+	if (g_col_output_enabled == -1 || v != -1) {
 		if (v == -1)
 			v = isatty(1) ? 1 : 0;
 

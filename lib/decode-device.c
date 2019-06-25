@@ -25,9 +25,10 @@
 
 #define CMD_HELP                0x1000
 #define CMD_VERSION             0x1001
+#define CMD_NOCOLOR             0x1002
 
 static char const			CMDLINE_SHORT[] = \
-	"T:D:A:v:d:";
+	"CT:D:A:v:d:";
 
 static struct option const		CMDLINE_OPTIONS[] = {
 	{ "help",         no_argument,       0, CMD_HELP },
@@ -37,6 +38,8 @@ static struct option const		CMDLINE_OPTIONS[] = {
 	{ "bus-addr",     required_argument, 0, 'A' },
 	{ "value",        required_argument, 0, 'v' },
 	{ "definitions",  required_argument, 0, 'd' },
+	{ "color",        no_argument,       0, 'C' },
+	{ "no-color",     no_argument,       0, CMD_NOCOLOR },
 	{ NULL, 0, 0, 0 }
 };
 
@@ -46,7 +49,7 @@ static void show_help(void)
 	       "Usage: decode [--help] [--version]\n"
 	       "    --type|-T <type> --definitions|-d <file>\n"
 	       "    [--bus-device|-D <device>] [--bus-addr|-A <addr>]\n"
-	       "    [--value|-v <value>]\n"
+	       "    [--value|-v <value>] [--color|-C] [--no-color]\n"
 	       "\n"
 	       "Required options:\n"
 	       "    - I2C: --bus-device (e.g. '/dev/i2c-2'), --bus-addr,\n"
@@ -718,6 +721,14 @@ int main(int argc, char *argv[])
 
 		case 'd':
 			definitions_file = optarg;
+			break;
+
+		case 'C':
+			col_init(1);
+			break;
+
+		case CMD_NOCOLOR:
+			col_init(0);
 			break;
 
 		default:
