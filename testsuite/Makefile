@@ -72,7 +72,10 @@ test-deserialize:	${test-deserialize_SOURCES} test-deserialize_symbols.h test-de
 	${CHECKER} $(abspath $<) --help $(TEST_OUTPUT)
 	${CHECKER} $(abspath $<) --version $(TEST_OUTPUT)
 	${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^)  ${TEST_OUTPUT}
-	${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^) @Test ${TEST_OUTPUT}
+	${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^) @Test-0       ${TEST_OUTPUT}
+	! ${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^) @no-match   2>/dev/null
+	${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^) @Test-0 IRQ\* ${TEST_OUTPUT}
+	! ${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^) @Test-0 no-match 2>/dev/null
 
 ..run-test-deserialize:	test-deserialize FORCE
 	env -u TEST_HEAP_ALLOC ${CHECKER} $(abspath $<) ${TEST_OUTPUT}
