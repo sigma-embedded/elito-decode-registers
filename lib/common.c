@@ -20,6 +20,15 @@ void *deserialize_alloc(size_t len)
 	return malloc(len);
 }
 
+static void dump_field_start(struct cpu_regfield const *fld)
+{
+	col_printf("\n  %-36" STR_FMT ":\t", STR_ARG(&fld->name));
+}
+
+static void dump_field_end(struct cpu_regfield const *fld)
+{
+}
+
 void deserialize_dump_frac(struct cpu_regfield_frac const *fld,
 			   regmax_t int_part, regmax_t frac_part,
 			   void *priv_)
@@ -30,41 +39,47 @@ void deserialize_dump_frac(struct cpu_regfield_frac const *fld,
 	v /= 1 << __builtin_popcount(frac_part);
 	v += int_part;
 
-	col_printf("\n  %-36" STR_FMT ":\t%f", STR_ARG(&fld->reg.name), v);
+	dump_field_start(&fld->reg);
+	col_printf("%f", v);
+	dump_field_end(&fld->reg);
 }
 
 void deserialize_dump_bool(struct cpu_regfield_bool const *fld,
 			   bool v, void *priv_)
 {
-	col_printf("\n  %-36" STR_FMT ":\t%s",
-	       STR_ARG(&fld->reg.name), col_boolstr(v));
+	dump_field_start(&fld->reg);
+	col_printf("%s", col_boolstr(v));
+	dump_field_end(&fld->reg);
 }
 
 void deserialize_dump_enum(struct cpu_regfield_enum const *fld,
 			   struct cpu_regfield_enum_val const *val,
 			   size_t idx, void *priv_)
 {
+	dump_field_start(&fld->reg);
 	if (val)
-		col_printf("\n  %-36" STR_FMT ":\t%" STR_FMT,
-			   STR_ARG(&fld->reg.name),
-			   STR_ARG(&val->name));
+		col_printf("%" STR_FMT, STR_ARG(&val->name));
 	else
-		col_printf("\n  %-36" STR_FMT ":\t#%zu",
-			   STR_ARG(&fld->reg.name),
-			   idx);
+		col_printf("#%zu", idx);
+	dump_field_end(&fld->reg);
 }
 
 void deserialize_dump_sint(struct cpu_regfield_int const *fld,
 			   signed long v, void *priv_)
 {
-	col_printf("\n  %-36" STR_FMT ":\t%ld", STR_ARG(&fld->reg.name), v);
+	dump_field_start(&fld->reg);
+	col_printf("%ld", v);
+	dump_field_end(&fld->reg);
 }
 
 void deserialize_dump_uint(struct cpu_regfield_int const *fld,
-			   regmax_t v, void *priv_)
+			   regmax_t v_, void *priv_)
 {
-	col_printf("\n  %-36" STR_FMT ":\t%llu", STR_ARG(&fld->reg.name),
-		   (unsigned long long)v);
+	unsigned long long	v = v_;
+
+	dump_field_start(&fld->reg);
+	col_printf("%llu", v);
+	dump_field_end(&fld->reg);
 }
 
 void deserialize_dump_reserved(struct cpu_regfield_reserved const *fld,
