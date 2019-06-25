@@ -25,8 +25,6 @@ ch_DATA = \
 	lib/common.h \
 	lib/deserialize.c \
 	lib/deserialize.h \
-	lib/decode-devmem.c \
-	lib/decode-i2c.c \
 
 mk_DATA = \
 	lib/cpudef.m4 \
