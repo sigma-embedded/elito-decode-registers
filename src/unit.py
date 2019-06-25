@@ -157,7 +157,7 @@ class Unit(block.Block, block.Mergeable):
         self.__memory = [addr, len]
 
     def _assign_addrwidth(self, width):
-        if width >= 256:
+        if width > 64:
             raise Exception("address width too large")
 
     def _assign_endian(self, endian):
