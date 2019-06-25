@@ -202,9 +202,16 @@ class Field(block.Block, block.Mergeable, block.Removable):
     class BitField:
         def __init__(self, bits = None):
             self.__v = None
+            self.__width = None
 
             if bits:
                 self.set(bits)
+
+        def set_width(self, width):
+            assert(width != None)
+            assert(self.__width == None or self.__width == width)
+
+            self.__width = width
 
         def set(self, bits):
             if self.__v == None:
@@ -249,6 +256,8 @@ class Field(block.Block, block.Mergeable, block.Removable):
                 return -1
 
         def get_mask(self):
+            assert(self.__width != None)
+
             res = 0
             for b in self.__v:
                 assert((res & (1 << b)) == 0)
@@ -629,7 +638,13 @@ class Field(block.Block, block.Mergeable, block.Removable):
         # TODO
 
     def _finalize(self):
-        pass
+        w = self.__register.get_regwidth()
+
+        self.__bits.set_width(w)
+
+        if self.__frac:
+            self.__frac[0].set_width(w)
+            self.__frac[1].set_width(w)
 
 
 class Register(block.Block, block.Mergeable):
