@@ -237,7 +237,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
             return self.__v.__iter__()
 
         def __str__(self):
-            return "%s" % self.__v
+            return "BITS <%x>: %s/%s" % (id(self), self.__v, self.__width)
 
         def min(self):
             if self.__v:
@@ -348,6 +348,9 @@ class Field(block.Block, block.Mergeable, block.Removable):
         self.__desc = None
         self.__frac = None
         self.__flags = Flags(self.ACCESS_READ | self.ACCESS_WRITE)
+
+    def __str__(self):
+        return "FIELD <%x>: %s (on %s)" % (id(self), self.__id, self.__register)
 
     def _assign_description(self, desc):
         self.__desc = desc
@@ -707,11 +710,14 @@ class Register(block.Block, block.Mergeable):
         self.__flags = Flags(self.ACCESS_READ | self.ACCESS_WRITE)
 
     def __str__(self):
-        return "REG %s (%s@%s, %08x/%d)" % (self.__id,
-                                            self.__name,
-                                            self.__unit.get_id(),
-                                            self.__offs,
-                                            self.__width)
+        return "REG%s <%x>: %s (%s@%s, %08x/%s)" % (
+            ["", "TMPL"][self.__is_template],
+            id(self),
+            self.__id,
+            self.__name,
+            self.__unit.get_id(),
+            self.__offs or 0xffffffff,
+            self.__width)
 
     def get_regwidth(self):
         return self.__unit.get_regwidth()

@@ -125,6 +125,15 @@ class Unit(block.Block, block.Mergeable):
         self.__endian = None
         self.bga = top.bga
 
+    def __str__(self):
+        if self.__memory is None:
+            mem = "%s" % None
+        else:
+            mem = "0x%08x+0x%08x" % (self.__memory[0], self.__memory[1])
+
+        return "UNIT <%x> %s@" % (id(self), self.__name) + mem + \
+            " (%s, %s)" % (self.__regwidth, self.__addrwidth)
+
     @staticmethod
     def cmp_by_addr(self, b):
         return self.__memory[0] - b.__memory[0]
