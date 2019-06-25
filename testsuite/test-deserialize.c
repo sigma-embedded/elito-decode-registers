@@ -442,14 +442,23 @@ static void dump_field(struct cpu_regfield const *fld)
 		.buf		= buf,
 		.buf_len	= sizeof buf,
 	};
-	reg_t			v = { .max = 0 };
+
+	/* allocate it dynamically to detect more issues with valid */
+	size_t			v_l = (fld->reg->width + 7) / 8;
+	reg_t			*v = malloc(v_l);
+
+	assert(v != NULL);
+
+	memset(v, 0x00, v_l);
 
 	printf("\t\t\t@field " STR_FMT "\n"
 	       "\t\t\t\t@name " STR_FMT "\n",
 	       STR_ARG(&fld->id), STR_ARG(&fld->name));
 
-	fld->fn(fld, &v, &d);
+	fld->fn(fld, v, &d);
 	printf("%s", buf);
+
+	free(v);
 }
 
 static void dump_register(struct cpu_register const *reg)
