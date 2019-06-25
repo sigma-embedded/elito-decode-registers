@@ -612,6 +612,7 @@ out:
 
 static int _decode_reg(struct cpu_register const *reg, void *ctx_)
 {
+	char			sbuf[REGISTER_PRINT_SZ];
 	struct ctx		*ctx = ctx_;
 	unsigned long		addr = reg->offset + reg->unit->start;
 	reg_t			val;
@@ -633,10 +634,9 @@ static int _decode_reg(struct cpu_register const *reg, void *ctx_)
 		return rc;
 
 	/* TODO: fix  printing of large bitfields */
-	col_printf("\n&@0x%08lx&# &N%-28" STR_FMT "&#\t&~0x%0*llx&#",
+	col_printf("\n&@0x%08lx&# &N%-28" STR_FMT "&#\t&~%s&#",
 		   addr, STR_ARG(&reg->name),
-		   (unsigned int)(reg->width / 4),
-		   (unsigned long long)val.max);
+		   deserialze_print_reg_t(sbuf, sizeof sbuf, &val, reg));
 
 	deserialize_decode_reg(reg, &val, ctx);
 

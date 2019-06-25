@@ -149,10 +149,11 @@ static void _deserialize_dump_uint_terse(struct cpu_regfield_int const *fld,
 static char *deserialize_introspect_int(struct cpu_regfield_int const *fld,
 					char *buf, size_t len)
 {
+	char	sbuf[REGISTER_PRINT_SZ];
 	int	rc;
 
-	rc = snprintf(buf, len, "\t\t\t\t@uint %08" PRIxMAX "\n",
-		      fld->bitmask.max);
+	rc = snprintf(buf, len, "\t\t\t\t@uint %s\n",
+		      print_reg_t(sbuf, &fld->bitmask, fld));
 
 	assert((size_t)rc < len);
 
@@ -215,11 +216,14 @@ void deserialize_dump_sint(struct cpu_regfield_int const *fld,
 static char *deserialize_introspect_frac(struct cpu_regfield_frac const *fld,
 					 char *buf, size_t len)
 {
+	char	sbuf0[REGISTER_PRINT_SZ];
+	char	sbuf1[REGISTER_PRINT_SZ];
 	int	rc;
 
 	/* TODO: fix reg_t printf */
-	rc = snprintf(buf, len, "\t\t\t\t@frac 0x%08" PRIxMAX " 0x%08" PRIxMAX "x\n",
-		      fld->int_part.max, fld->frac_part.max);
+	rc = snprintf(buf, len, "\t\t\t\t@frac %s %s\n",
+		      print_reg_t(sbuf0, &fld->int_part, fld),
+		      print_reg_t(sbuf1, &fld->frac_part, fld));
 
 	assert((size_t)rc < len);
 
@@ -289,11 +293,12 @@ void deserialize_dump_frac(struct cpu_regfield_frac const *fld,
 static char *deserialize_introspect_enum(struct cpu_regfield_enum const *fld,
 					 char *buf, size_t len)
 {
+	char	sbuf[REGISTER_PRINT_SZ];
 	char	*res = buf;
 	int	rc;
 
-	rc = snprintf(buf, len, "\t\t\t\t@bitmask 0x%08" PRIxMAX "\n",
-		      fld->bitmask.max);
+	rc = snprintf(buf, len, "\t\t\t\t@bitmask %s\n",
+		      print_reg_t(sbuf, &fld->bitmask, fld));
 
 	assert((size_t)(rc) < len);
 
@@ -376,21 +381,25 @@ void deserialize_dump_enum(struct cpu_regfield_enum const *fld,
 static char *deserialize_introspect_reserved(struct cpu_regfield_reserved const *fld,
 					     char *buf, size_t len)
 {
+	char	sbuf[REGISTER_PRINT_SZ];
 	int	rc;
 
-	rc = snprintf(buf, len, "\t\t\t\t@reserved %" PRIxMAX "\n",
-		      fld->bitmask.max);
+	rc = snprintf(buf, len, "\t\t\t\t@reserved %s\n",
+		      print_reg_t(sbuf, &fld->bitmask, fld));
 
 	assert((size_t)rc < len);
 
 	return buf;
 }
 
-static char *_deserialize_dump_reserved(reg_t const *bitmask, char *buf, size_t len)
+static char *_deserialize_dump_reserved(struct cpu_regfield_reserved const *fld,
+					char *buf, size_t len)
 {
-	int	rc;
+	reg_t const	*bitmask = &fld->bitmask;
+	char		sbuf[REGISTER_PRINT_SZ];
+	int		rc;
 
-	rc = snprintf(buf, len, "%" PRIxMAX, bitmask->max);
+	rc = snprintf(buf, len, "%s", print_reg_t(sbuf, bitmask, fld));
 	assert((size_t)rc < len);
 	return buf;
 }
@@ -399,12 +408,13 @@ static void _deserialize_dump_reserved_terse(struct cpu_regfield_reserved const 
 					     reg_t const *bitmask,
 					     struct dump_data *priv)
 {
+	char	sbuf[REGISTER_PRINT_SZ];
 	int	rc;
 
 	priv->reg = fld->reg.reg;
 
 	if (1) {
-		rc = sprintf(priv->ptr, "%" PRIxMAX, bitmask->max);
+		rc = sprintf(priv->ptr, "%s", print_reg_t(sbuf, bitmask, fld));
 
 		priv->ptr += rc;
 		priv->delim = ", ";
@@ -419,7 +429,7 @@ void deserialize_dump_reserved(struct cpu_regfield_reserved const *fld,
 	if (priv->do_introspect)
 		deserialize_introspect_reserved(fld, priv->buf, priv->buf_len);
 	else if (!priv->is_terse)
-		_deserialize_dump_reserved(&fld->bitmask, priv->buf, priv->buf_len);
+		_deserialize_dump_reserved(fld, priv->buf, priv->buf_len);
 	else
 		_deserialize_dump_reserved_terse(fld, &fld->bitmask, priv);
 }

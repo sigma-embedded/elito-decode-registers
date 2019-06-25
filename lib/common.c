@@ -63,7 +63,6 @@ void deserialize_dump_sint(struct cpu_regfield_int const *fld,
 void deserialize_dump_uint(struct cpu_regfield_int const *fld,
 			   regmax_t v, void *priv_)
 {
-	/* TODO: use better format for large bitfields */
 	col_printf("\n  %-36" STR_FMT ":\t%llu", STR_ARG(&fld->reg.name),
 		   (unsigned long long)v);
 }
