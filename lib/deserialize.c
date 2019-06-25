@@ -133,13 +133,13 @@ unsigned int deserialize_popcount(reg_t const *reg, unsigned int width)
 
 static bool test_bit(reg_t const *reg, unsigned int bit)
 {
-	regmax_t		v;
-	regmax_t		msk = 1u;
+	uint8_t		v;
+	uint8_t		msk = 1u;
 
-	BUG_ON(bit > sizeof reg->reg_raw * 8);
+	BUG_ON(bit > sizeof reg->raw * 8);
 
-	v = reg->reg_raw[bit / 8 / sizeof v];
-	msk <<= bit % (8 / sizeof v);
+	v = reg->raw[bit / (8 * sizeof v)];
+	msk <<= bit % (8 * sizeof v);
 
 	return (v & msk) != 0;
 }
