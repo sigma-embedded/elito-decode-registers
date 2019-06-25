@@ -32,6 +32,7 @@ static uint8_t const	STREAM[] = {
 #define STR_FMT		"%.*s"
 #define STR_ARG(_s)	(int)((_s)->len), (_s)->data
 
+#define BUG_ON(_x)	assert(!(_x))
 
 static size_t g_buf_len = 1024;
 
@@ -531,6 +532,46 @@ static void dump_regval(struct cpu_unit const units[], size_t num_units,
 		dump_regval(units, num_units,
 			    0xffff0000 + (val & 0x7) * 4, val >> 16);
 	}
+}
+
+/* TODO: reuse code from common.c? */
+char const *deserialze_print_reg_t(void *dst, size_t len, reg_t const *reg,
+				   struct cpu_register const *creg)
+{
+	unsigned int	w = creg->width;
+	size_t		l;
+
+	if (w <= 8) {
+		l = snprintf(dst, len, "0x%02" PRIx8, reg->u8);
+	} else if (w <= 16) {
+		l = snprintf(dst, len, "0x%04" PRIx16, reg->u16);
+	} else if (w <= 32) {
+		l = snprintf(dst, len, "0x%08" PRIx32, reg->u32);
+	} else if (w <= 64) {
+		l = snprintf(dst, len, "0x%16" PRIx64, reg->u64);
+	} else {
+		l = snprintf(dst, len, "0x");
+
+		BUG_ON((w % 8) != 0);
+
+		for (unsigned i = 0; i < w; i += 8) {
+			size_t	idx = i / 8;
+
+			if (__BYTE_ORDER != __BIG_ENDIAN)
+				idx = w / 8 - idx - 1;
+
+			if (l + 1 >= len) {
+				l = len;
+				break;
+			}
+
+			l += snprintf(dst + l, len - l, "%02x", reg->raw[idx]);
+		}
+	}
+
+	BUG_ON(l >= len);
+
+	return dst;
 }
 
 int main(int argc, char *argv[])
