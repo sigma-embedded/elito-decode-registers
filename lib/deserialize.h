@@ -37,6 +37,10 @@ typedef REGISTER_CALC_T		regcalc_t;
 typedef regmax_t		regcalc_t;
 #endif
 
+#define REGISTER_PRINT_SZ	((size_t)(sizeof "0x" + \
+					  (REGISTER_MAX_REGSIZE / 4u) + \
+					  (REGISTER_MAX_REGSIZE / 4u / 8u)))
+
 union _reg {
 	uint8_t		u8;
 	uint16_t	u16;
@@ -179,5 +183,11 @@ int deserialize_decode_range(struct cpu_unit const units[], size_t unit_cnt,
 			     int (*decode_fn)(struct cpu_register const *reg,
 					      void *priv),
 			     void *priv);
+
+char const *deserialze_print_reg_t(void *dst, size_t len, reg_t const *,
+				   struct cpu_register const *reg);
+
+#define print_reg_t(_dst, _reg, _fld) \
+	deserialze_print_reg_t((_dst), sizeof(_dst), (_reg), (_fld)->reg.reg)
 
 #endif	/* H_ELITO_DECODER_DESERIALIZER_H */

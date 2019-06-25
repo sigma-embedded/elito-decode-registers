@@ -24,6 +24,7 @@
 #include <endian.h>
 #include <string.h>
 #include <stddef.h>
+#include <inttypes.h>
 
 #include DESERIALIZE_SYMBOLS
 
@@ -858,4 +859,47 @@ void deserialize_cpu_unit_release(struct cpu_unit const *unit)
 		deserialize_cpu_register_release(&unit->registers[i]);
 
 	xfree(unit->registers);
+}
+
+char const *deserialze_print_reg_t(void *dst, size_t len, reg_t const *reg,
+				   struct cpu_register const *creg)
+{
+	unsigned int	w = creg->width;
+	size_t		l;
+
+	if (w <= 8) {
+		l = snprintf(dst, len, "0x%02" PRIx8, reg->u8);
+	} else if (w <= 16) {
+		l = snprintf(dst, len, "0x%02" PRIx16, reg->u16);
+	} else if (w <= 32) {
+		l = snprintf(dst, len, "0x%04" PRIx32, reg->u32);
+	} else if (w <= 64) {
+		l = snprintf(dst, len, "0x%08" PRIx64, reg->u64);
+	} else {
+		l = snprintf(dst, len, "0x");
+
+		BUG_ON((w % 8) != 0);
+
+		for (unsigned i = 0; i < w; i += 8) {
+			size_t	idx = i / 8;
+
+			if (__BYTE_ORDER != __BIG_ENDIAN)
+				idx = w / 8 - idx - 1;
+
+			if (l + 1 >= len) {
+				l = len;
+				break;
+			}
+
+			l += snprintf(dst + l, len - l, "%02x", reg->raw[idx]);
+			if (i + 8 < w && ((i + 8) % 32) == 0) {
+				strcpy(dst + l, ".");
+				l += 1;
+			}
+		}
+	}
+
+	BUG_ON(l >= len);
+
+	return dst;
 }
