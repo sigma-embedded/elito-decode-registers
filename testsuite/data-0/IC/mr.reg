@@ -2,6 +2,7 @@
   @addr 0x2000 16
   @field PD
     @bits 12
+    @rw
     @enum 0 "DLL off"
     @enum 1 "DLL on"
 
@@ -50,3 +51,4 @@
 
   @field HEX
     @uhex 15-8
+    @wo
