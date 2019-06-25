@@ -848,6 +848,14 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
+	if (ctx.num_shown == 0) {
+		fprintf(stderr, "no matching registers found\n");
+		rc = EX_NOINPUT;
+		goto out;
+	}
+
+	rc = EX_OK;
+
 out:
 	for (size_t i = definitions.num_units; i > 0; --i)
 		deserialize_cpu_unit_release(&definitions.units[i - 1]);
