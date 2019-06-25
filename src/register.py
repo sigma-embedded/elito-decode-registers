@@ -442,6 +442,9 @@ class Field(block.Block, block.Mergeable, block.Removable):
     def _set_bits(self, bits):
         self.__bits.set(bits)
 
+    def check_bits(self):
+        assert(self.__bits.get_width() == self.__register.get_regwidth())
+
     def get_enums(self, all = False):
         tmp = self.filter(lambda x: isinstance(x, Enum) and
                           (all or not x.is_removed()))
@@ -528,6 +531,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         top.add_type(symbol, None)
 
         code   = top.create_block('enum')
+        #print("XXXXX: %s: bits=%s" % (self, self.__bits))
         self.__bits.generate_code(code, "bitmask (%s)" % self.__bits)
 
         if len(self.__bits) <= 8:
@@ -649,6 +653,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         # TODO
 
     def _finalize(self):
+        print("      Field: finalize %s" % self)
         w = self.__register.get_regwidth()
 
         self.__bits.set_width(w)
@@ -657,6 +662,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
             self.__frac[0].set_width(w)
             self.__frac[1].set_width(w)
 
+        print("AXXXXX: %s/%d: bits=%s" % (self, w, self.__bits))
 
 class Register(block.Block, block.Mergeable):
     ACCESS_READ		= 0x01
@@ -840,8 +846,9 @@ class Register(block.Block, block.Mergeable):
         return self.__flags.get()
 
     def _merge(self, reg):
+        print("  Register: merging %s into %s" % (reg.get_id(), self.get_id()))
+
         assert(isinstance(reg, Register))
-        #print("Register: merging %s into %s" % (reg.get_id(), self.get_id()))
         assert(not self.is_finalized())
         assert(reg.is_finalized())
 
@@ -862,21 +869,26 @@ class Register(block.Block, block.Mergeable):
         assert(reg.__pin == None)
 
     def _merge_pre(self):
+        print("  Register: pre-merging %s (%s)" % (self.get_id(), self.__unit))
+
         assert(not self.is_finalized())
 
         fields = self.filter(lambda f: isinstance(f, Field))
         fields = block.Mergeable.create_container(fields, lambda x: x.get_id())
 
         for f in fields.values():
+            print("      XXX: %s" % f)
             assert(isinstance(f, block.Mergeable))
             f.merge(fields)
 
         self.__fields = fields
 
     def _merge_post(self):
+        print("  Register: post-merging %s" % (self.get_id()))
         self.finalize()
 
     def _finalize(self):
+        print("    Register: finalizing %s/%s" % (self.get_id(), self.__fields))
         for f in self.__fields.values():
             f.finalize()
 

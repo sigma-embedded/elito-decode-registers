@@ -201,10 +201,13 @@ class Unit(block.Block, block.Mergeable):
         self.__registers = regs
 
     def _finalize(self):
+        print(" Unit: finalizing %s" % (self.get_id()))
         for r in self.__registers.values():
             r.finalize()
 
     def _merge_pre(self):
+        print("Unit: pre-merging %s" % (self.get_id()))
+
         assert(self.__registers != None)
         assert(not self.is_finalized())
 
@@ -212,6 +215,8 @@ class Unit(block.Block, block.Mergeable):
             r.merge(self.__registers)
 
     def _merge(self, base):
+        print("Unit: merging %s into %s" % (base.get_id(), self.get_id()))
+
         assert(isinstance(base, Unit))
         assert(not self.is_finalized())
         assert(base.is_finalized())
@@ -229,6 +234,7 @@ class Unit(block.Block, block.Mergeable):
         pass
 
     def _merge_post(self):
+        print("Unit: post-merging %s" % (self.get_id()))
         self.finalize()
 
     def generate_code(self, top):
