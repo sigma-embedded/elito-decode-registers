@@ -1,0 +1,12 @@
+@register ID
+  @addr 0x00
+  @field id
+    @uint 7-3
+  @field SLOCK
+    @boolean 5
+  @field VVBI
+    @sint 3-0
+  @field DET50
+    @bits 0
+    @enum 0 "60Hz"
+    @enum 1 "50Hz"

@@ -43,3 +43,8 @@
   @reg  0x4000 0x100
   @regwidth 160 32 BE
   @registers LARGE/
+
+@unit "8BIT"
+  @reg  0x00 0x100
+  @regwidth 8 8 BE
+  @registers 8BIT/
