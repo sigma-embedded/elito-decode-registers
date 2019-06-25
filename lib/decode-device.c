@@ -376,6 +376,7 @@ static void device_emu_deinit(struct device *dev)
 static int device_emu_read(struct device *dev, uintptr_t addr,
 			   unsigned int width, reg_t *val)
 {
+	memset(val, 0, (width + 7) / 8);
 	val->max = dev->emu.value;
 
 	return 0;
