@@ -195,7 +195,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
     ACCESS_READ		= 0x01
     ACCESS_WRITE	= 0x02
     ACCESS_msk		= (ACCESS_READ | ACCESS_WRITE)
-    
+
     class BitField:
         def __init__(self, bits = None):
             self.__v = None
@@ -424,7 +424,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
     def get_flags(self):
         return self.__flags.get()
-    
+
     def __update_enums(self, other):
         self_enums  = self.get_enums(True)
         other_enums = other.get_enums()
@@ -594,7 +594,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
                                          Field.ACCESS_READ, "read access"))
         code.add_symbol(generator.Symbol("FIELD_FLAG_ACCESS_WRITE",
                                          Field.ACCESS_WRITE, "write access"))
-        
+
         code.add_uint_var(self.get_flags(), 2, "flags")
         code.add_string(self.get_id(), "id")
         code.add_string(self.get_name(), "name")
@@ -624,7 +624,7 @@ class Register(block.Block, block.Mergeable):
     ACCESS_READ		= 0x01
     ACCESS_WRITE	= 0x02
     ACCESS_msk		= (ACCESS_READ | ACCESS_WRITE)
-    
+
     class __Parser(block.Parser):
         def __init__(self, obj):
             super().__init__(obj)
@@ -715,7 +715,7 @@ class Register(block.Block, block.Mergeable):
 
     def get_regwidth(self):
         return self.__unit.get_regwidth()
-    
+
     def assign_af(self, num, fn, field):
         if not isinstance(self.__pin, _NoPin):
             self.__pin.add(num, fn, field)

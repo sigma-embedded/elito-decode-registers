@@ -162,7 +162,7 @@ static bool pop_uint_var(uintmax_t *s, unsigned int order,
 }
 
 static bool pop_size_t_var(size_t *s, unsigned int order,
-			 void const **buf, size_t *sz)
+			   void const **buf, size_t *sz)
 {
 	uintmax_t	tmp;
 
@@ -633,7 +633,7 @@ static bool pop_cpu_unit(struct cpu_unit *unit, void const **buf, size_t *sz)
 }
 
 bool deserialize_cpu_units(struct cpu_unit **units, size_t *num,
-			  void const **buf, size_t *sz)
+			   void const **buf, size_t *sz)
 {
 	if (!pop_size_t(num, buf, sz))
 		return false;
