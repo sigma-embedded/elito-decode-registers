@@ -37,15 +37,16 @@ clean:	.clean-$1
 .clean-$1:.clean-%:
 	rm -f registers-$$*.inc.h symbols-$$*.h decode-$$* regstream-$$*.bin
 
+.prepare-$1:
 endef
 
 set_dev_type =	$(eval $(call _set_dev_type,$1,$2))
 
-registers-%.inc.h:
+registers-%.inc.h:	.prepare-%
 	$(call run_gendesc,--datastream-c)
 
-symbols-%.h:
+symbols-%.h:		.prepare-%
 	$(call run_gendesc,--c-define)
 
-regstream-%.bin:
+regstream-%.bin:	.prepare-%
 	$(call run_gendesc,--datastream)
