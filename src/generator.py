@@ -257,6 +257,12 @@ class CodeFactory(metaclass=abc.ABCMeta):
     def add_x8(self, v, comment, fmt = "0x%02x"):
         return self._add_int(v, comment, 32, False, fmt)
 
+    def add_uint(self, v, num_bits, comment):
+        return self._add_int(v, comment, num_bits, False)
+
+    def add_sint(self, v, num_bits, comment):
+        return self._add_int(v, comment, num_bits, True)
+
 class CodeGenerator(CodeBlock):
     def __init__(self, factory):
         CodeBlock.__init__(self, None, None)
