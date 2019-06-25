@@ -47,3 +47,6 @@
   @field XXX
     @bits 15
     @reserved
+
+  @field HEX
+    @uhex 15-8
