@@ -59,6 +59,8 @@ static regmax_t get_masked_value(reg_t const *v_ext,
 	regmax_t	res = 0;
 	unsigned int	pos = 0;
 	unsigned int	width = reg->width;
+	void const	*v_in = v_ext->reg_raw;
+	void const	*m_in = mask_ext->reg_raw;
 
 	BUG_ON(!v_ext);
 	BUG_ON(width > 8 * sizeof *mask_ext);
@@ -66,9 +68,12 @@ static regmax_t get_masked_value(reg_t const *v_ext,
 
 	width = (width + 7) / 8;
 
-	for (size_t i = 0; i < width; i += sizeof(regcalc_t)) {
-		regcalc_t	v = v_ext->reg_raw[i];
-		regcalc_t	mask = mask_ext->calc_raw[i];
+	while (width >= sizeof(regcalc_t)) {
+		regcalc_t	v;
+		regcalc_t	mask;
+
+		memcpy(&v,    v_in, sizeof v);
+		memcpy(&mask, m_in, sizeof mask);
 
 		while (mask) {
 			int	p = __builtin_ffs(mask) - 1;
@@ -78,6 +83,31 @@ static regmax_t get_masked_value(reg_t const *v_ext,
 
 			mask &= ~(1 << p);
 		}
+
+		v_in += sizeof v;
+		m_in += sizeof v;
+		width -= sizeof v;
+	}
+
+	while (width > 0) {
+		uint8_t	v;
+		uint8_t	mask;
+
+		memcpy(&v,    v_in, sizeof v);
+		memcpy(&mask, m_in, sizeof mask);
+
+		while (mask) {
+			int	p = __builtin_ffs(mask) - 1;
+
+			res  |= ((v >> p) & 1) << pos;
+			++pos;
+
+			mask &= ~(1 << p);
+		}
+
+		v_in += sizeof v;
+		m_in += sizeof v;
+		width -= sizeof v;
 	}
 
 	BUG_ON(pos > 8 * sizeof res);
