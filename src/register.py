@@ -265,6 +265,9 @@ class Field(block.Block, block.Mergeable, block.Removable):
 
             return res
 
+        def generate_code(self, code, desc):
+            code.add_uint(self.get_mask(), self.__width, desc)
+
         def __eq__(self, a):
             if a == None:
                 return self.__v == a
@@ -515,7 +518,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         top.add_type(symbol, None)
 
         code   = top.create_block('enum')
-        code.add_x32(self.__bits.get_mask(), "bitmask (%s)" % self.__bits)
+        self.__bits.generate_code(code, "bitmask (%s)" % self.__bits)
 
         if len(self.__bits) <= 8:
             m = code.add_u8
@@ -909,6 +912,6 @@ class Register(block.Block, block.Mergeable):
                 raise
 
         if msk != 0:
-            Field.generate_code_reserved(code0, msk)
+            Field.generate_code_reserved(code0, msk, self.get_regwidth())
 
         return code
