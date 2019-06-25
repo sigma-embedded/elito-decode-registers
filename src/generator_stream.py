@@ -18,29 +18,12 @@ import generator
 import struct
 
 class Endianess:
-    def __init__(self, fmt):
+    def __init__(self, fmt, str):
         self.fmt = fmt
+        self.str = str
 
-LITTLE_ENDIAN	= Endianess('<')
-BIG_ENDIAN	= Endianess('>')
-
-def _create_int_fmt(width, is_signed, endian):
-    assert(isinstance(endian, Endianess))
-
-    fmt = endian.fmt
-
-    if width == 8:
-        fmt += ['B', 'b'][is_signed]
-    elif width == 16:
-        fmt += ['H', 'h'][is_signed]
-    elif width == 32:
-        fmt += ['I', 'i'][is_signed]
-    elif width == 64:
-        fmt += ['Q', 'q'][is_signed]
-    else:
-        raise Exception("Unsupported with %d" % width)
-
-    return fmt
+LITTLE_ENDIAN	= Endianess('<', 'little')
+BIG_ENDIAN	= Endianess('>', 'big')
 
 class CodeFactory(generator.CodeFactory):
     class _Int(generator.CodeObject):
@@ -50,12 +33,11 @@ class CodeFactory(generator.CodeFactory):
             if isinstance(v, generator.Symbol):
                 v = v.get_value()
 
-            self.__fmt = _create_int_fmt(width, is_signed, endian)
-            self.__v   = v
             self.__xform = xform
+            self.__v = v.to_bytes((width + 7) // 8, endian.str, signed = is_signed)
 
         def emit(self, lvl = 0, print_comment = True):
-            return self.__xform(struct.pack(self.__fmt, self.__v))
+            return self.__xform(self.__v)
 
     class _String(generator.CodeObject):
         def __init__(self, v, endian, xform):
