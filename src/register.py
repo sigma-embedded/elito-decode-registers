@@ -632,6 +632,8 @@ class Field(block.Block, block.Mergeable, block.Removable):
                                          Field.ACCESS_READ, "read access"))
         code.add_symbol(generator.Symbol("FIELD_FLAG_ACCESS_WRITE",
                                          Field.ACCESS_WRITE, "write access"))
+        code.add_symbol(generator.Symbol("FIELD_FLAG_ACCESS_msk",
+                                         Field.ACCESS_msk, "access mask"))
         code.add_symbol(generator.Symbol("FIELD_FLAG_DISPLAY_HEX",
                                          Field.DISPLAY_HEX, "display as hex"))
         code.add_symbol(generator.Symbol("FIELD_FLAG_DISPLAY_DEC",
