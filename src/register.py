@@ -348,7 +348,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
             elif tag in ['@rw', '@read-write']:
                 self.o._set_flags(Field.ACCESS_READ | Field.ACCESS_WRITE, Field.ACCESS_msk)
             elif tag in ['@wo', '@write-only']:
-                self.o._set_flags(Field.ACCESS_READ | Field.ACCESS_WRITE, Field.ACCESS_msk)
+                self.o._set_flags(Field.ACCESS_WRITE, Field.ACCESS_msk)
             else:
                 assert(False)
 
