@@ -199,6 +199,10 @@ class Field(block.Block, block.Mergeable, block.Removable):
     ACCESS_WRITE	= 0x02
     ACCESS_msk		= (ACCESS_READ | ACCESS_WRITE)
 
+    DISPLAY_HEX		= (1 << 2)
+    DISPLAY_DEC		= (2 << 2)
+    DISPLAY_msk		= (7 << 2)
+
     class BitField:
         def __init__(self, bits = None):
             self.__v = None
@@ -291,6 +295,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
                 '@sint' : 1,
                 '@signed' : 1,
                 '@reserved' : 0,
+                '@uhex' : 1,
 
                 "@ro" : 0,
                 "@read-only" : 0,
@@ -329,6 +334,9 @@ class Field(block.Block, block.Mergeable, block.Removable):
                 self.o._set_frac(l[1], l[2])
             elif tag in ['@integer', '@uint']:
                 self.o._set_uint(l[1])
+            elif tag  == '@uhex':
+                self.o._set_uint(l[1])
+                self.o._set_flags(Field.DISPLAY_HEX, Field.DISPLAY_HEX)
             elif tag in ['@signed', '@sint']:
                 self.o._set_sint(l[1])
             elif tag == '@reserved':
@@ -624,6 +632,12 @@ class Field(block.Block, block.Mergeable, block.Removable):
                                          Field.ACCESS_READ, "read access"))
         code.add_symbol(generator.Symbol("FIELD_FLAG_ACCESS_WRITE",
                                          Field.ACCESS_WRITE, "write access"))
+        code.add_symbol(generator.Symbol("FIELD_FLAG_DISPLAY_HEX",
+                                         Field.DISPLAY_HEX, "display as hex"))
+        code.add_symbol(generator.Symbol("FIELD_FLAG_DISPLAY_DEC",
+                                         Field.DISPLAY_DEC, "display as decimal"))
+        code.add_symbol(generator.Symbol("FIELD_FLAG_DISPLAY_msk",
+                                         Field.DISPLAY_msk, "display fmt mask"))
 
         code.add_uint_var(self.get_flags(), 2, "flags")
         code.add_string(self.get_id(), "id")
