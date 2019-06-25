@@ -79,7 +79,7 @@ struct device;
 struct device_ops {
 	void			(*deinit)(struct device *);
 	int			(*read)(struct device *, uintptr_t addr,
-					unsigned int width, uintmax_t *val);
+					unsigned int width, reg_t *val);
 	void			(*select_unit)(struct device *,
 					       struct cpu_unit const *);
 };
@@ -227,7 +227,7 @@ static void device_i2c_deinit(struct device *dev)
 }
 
 static int device_i2c_read(struct device *dev, uintptr_t addr,
-			   unsigned int width, uintmax_t *val)
+			   unsigned int width, reg_t *val)
 {
 	struct device_i2c	*i2c = &dev->i2c;
 	union uinttype		e_addr;
@@ -374,9 +374,9 @@ static void device_emu_deinit(struct device *dev)
 }
 
 static int device_emu_read(struct device *dev, uintptr_t addr,
-			   unsigned int width, uintmax_t *val)
+			   unsigned int width, reg_t *val)
 {
-	*val = dev->emu.value;
+	val->max = dev->emu.value;
 
 	return 0;
 }
@@ -409,12 +409,11 @@ static void device_mem_deinit(struct device *dev)
 }
 
 static int device_mem_read(struct device *dev, uintptr_t addr,
-			   unsigned int width, uintmax_t *val)
+			   unsigned int width, reg_t *val)
 {
 	struct device_mem	*mdev = &dev->mem;
 	uintptr_t		page = addr & ~(mdev->page_sz - 1);
 	void const		*mem;
-	union uinttype		tmp;
 
 	if (!mdev->is_mapped || mdev->page != page) {
 		if (mdev->is_mapped) {
@@ -439,23 +438,22 @@ static int device_mem_read(struct device *dev, uintptr_t addr,
 
 	switch (width) {
 	case 8:
-		memcpy(&tmp.u8, mem, sizeof tmp.u8);
-		*val = tmp.u8;
+		memcpy(&val->u8, mem, sizeof val->u8);
 		break;
 	case 16:
-		memcpy(&tmp.u16, mem, sizeof tmp.u16);
-		*val = tmp.u16;
+		memcpy(&val->u16, mem, sizeof val->u16);
 		break;
 	case 32:
-		memcpy(&tmp.u32, mem, sizeof tmp.u32);
-		*val = tmp.u32;
+		memcpy(&val->u32, mem, sizeof val->u32);
 		break;
 	case 64:
-		memcpy(&tmp.u64, mem, sizeof tmp.u64);
-		*val = tmp.u64;
+		memcpy(&val->u64, mem, sizeof val->u64);
 		break;
 	default:
-		abort();
+		/* ensure that we stay on the same page */
+		BUG_ON(((addr + (width + 7) / 8) | (mdev->page_sz - 1)) !=
+		       (addr  | (mdev->page_sz - 1)));
+		memcpy(&val->u64, mem, sizeof val->u64);
 		break;
 	}
 
@@ -616,7 +614,7 @@ static int _decode_reg(struct cpu_register const *reg, void *ctx_)
 {
 	struct ctx		*ctx = ctx_;
 	unsigned long		addr = reg->offset + reg->unit->start;
-	uintmax_t		val;
+	reg_t			val;
 	int			rc;
 
 	if (reg->unit != ctx->last_unit) {
@@ -634,12 +632,13 @@ static int _decode_reg(struct cpu_register const *reg, void *ctx_)
 	if (rc < 0)
 		return rc;
 
+	/* TODO: fix  printing of large bitfields */
 	col_printf("\n&@0x%08lx&# &N%-28" STR_FMT "&#\t&~0x%0*llx&#",
 		   addr, STR_ARG(&reg->name),
 		   (unsigned int)(reg->width / 4),
-		   (unsigned long long)val);
+		   (unsigned long long)val.max);
 
-	deserialize_decode_reg(reg, val, ctx);
+	deserialize_decode_reg(reg, &val, ctx);
 
 	col_printf("\n");
 

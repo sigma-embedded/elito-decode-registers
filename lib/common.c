@@ -21,7 +21,7 @@ void *deserialize_alloc(size_t len)
 }
 
 void deserialize_dump_frac(struct cpu_regfield_frac const *fld,
-			   reg_t int_part, reg_t frac_part,
+			   regmax_t int_part, regmax_t frac_part,
 			   void *priv_)
 {
 	double			v;
@@ -55,19 +55,21 @@ void deserialize_dump_enum(struct cpu_regfield_enum const *fld,
 }
 
 void deserialize_dump_sint(struct cpu_regfield_int const *fld,
-			   signed int v, void *priv_)
+			   signed long v, void *priv_)
 {
-	col_printf("\n  %-36" STR_FMT ":\t%d", STR_ARG(&fld->reg.name), v);
+	col_printf("\n  %-36" STR_FMT ":\t%ld", STR_ARG(&fld->reg.name), v);
 }
 
 void deserialize_dump_uint(struct cpu_regfield_int const *fld,
-			   unsigned int v, void *priv_)
+			   regmax_t v, void *priv_)
 {
-	col_printf("\n  %-36" STR_FMT ":\t%u", STR_ARG(&fld->reg.name), v);
+	/* TODO: use better format for large bitfields */
+	col_printf("\n  %-36" STR_FMT ":\t%llu", STR_ARG(&fld->reg.name),
+		   (unsigned long long)v);
 }
 
 void deserialize_dump_reserved(struct cpu_regfield_reserved const *fld,
-			       reg_t v, void *priv)
+			       reg_t const *v, void *priv)
 {
 	(void)fld;
 	(void)v;
