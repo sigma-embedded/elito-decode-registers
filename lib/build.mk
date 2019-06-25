@@ -26,3 +26,6 @@ symbols-%.h:		.prepare-%
 
 regstream-%.bin:	.prepare-%
 	$(call run_gendesc,--datastream)
+
+registers-%.fill.c:	.prepare-%
+	$(call run_gendesc,--c-fill)
