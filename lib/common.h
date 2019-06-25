@@ -22,6 +22,22 @@
 #define STR_FMT		".*s"
 #define STR_ARG(_s)	(int)((_s)->len), (_s)->data
 
+#ifndef BUG
+#  include <stdio.h>
+#  define BUG()		do {						\
+		fprintf(stderr, "%s:%u aborted\n", __func__, __LINE__); \
+		abort();						\
+		__builtin_unreachable();				\
+	} while (1)
+#endif
+
+#ifndef BUG_ON
+#  define BUG_ON(_cond)	do {			\
+		if ((_cond))			\
+			BUG();			\
+	} while (0)
+#endif
+
 void col_printf(char const *fmt, ...) __attribute__((__format__(gnu_printf, 1,2)));
 char const	*col_boolstr(bool v) __attribute__((__pure__));
 void		col_init(int);
