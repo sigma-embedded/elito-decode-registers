@@ -1,0 +1,262 @@
+* Purpose
+
+This tools displays content of registers in a human readable way.  It
+was written with a focus on a simple description language
+
+It was developed to display content of the iMX6 DDR controller
+registerss within a minimal bootloader but evolved to support other
+devices and setups.
+
+Base ideas are:
+
+- reusability :: processors have usually multiple instances of a
+                 processing unit; allow to use templates or already
+                 existing definitions (the =@use= keyword in
+                 combination with =@disabled= or =@template=)
+
+- simplicity :: just simple text files; no XML, no binary files.
+
+- various datatypes :: enumerations, integers, fixed point fractionals
+
+- large registers :: registers can be up to 256 bits
+
+- various access modes :: originally written for direct memory access
+     but extended in the meantime for =/dev/mem= and =/dev/i2c-X=.
+     Esepcially for the latter usecase, the description contains
+     information about address width and device endianess.
+
+- complex bitmasks :: sometimes, register fields are contained in non
+     contiguous bits; this can be specified like =@bits 10-8 16=.
+
+- support of similar but still different processors :: often,
+     registers are similar across processor family but there can be
+     still differences (different addresses, different number of unit
+     instances).  This can be specified by a =[symbol]= selector
+
+* Description Language
+
+Generated description stream consists of several (processor) units
+which have a set of registers with fields.
+
+
+** Units
+
+Sample:
+
+#+BEGIN_SRC
+@unit _UART
+  @disabled      ## it is used a tamplate
+
+  # addresses have a 32 bit width
+  # registers have a 16 bit width
+  # internal representation is little endian
+  @regwidth 32 16 LE
+
+  # look for register descriptions with a '*.reg' pattern in UART/
+  @registers UART/
+
+@unit UART0
+  # use template
+  @use _UART
+  # physical address + unit size
+  @reg 0x01230000 0x1000
+  
+@unit UART1
+  @use _UART
+  @reg 0x01240000 0x1000
+
+## only available on a large cpu
+@unit[large-cpu] UART2
+  @use _UART
+  @reg 0x01250000 0x1000
+#+END_SRC
+
+
+** Registers
+
+Sample:
+
+#+BEGIN_SRC 
+@register CTRL0
+  # relative to containig unit address
+  @addr 0x0000
+  @field ENABLE
+    # a flag on bit position 0
+    @boolean 0
+  @field TYPE
+    @bits 2-1
+    @enum 0 "RS232"
+    @enum 1 "RS485"
+  @field DIVIDER
+    # a 3.5 fixed point fractional
+    @frac 10-8 7-3
+  @field COUNTER
+    @uint 15-11
+    @ro
+#+END_SRC
+
+or
+
+#+BEGIN_SRC 
+@register RX
+  # on cpu-a at address 0x02 but 8 bit access
+  @addr[cpu-a] 0x0002 8
+  # on cpu-b at address 0x1000 with 32 bit access
+  @addr[cpu-b] 0x0100 32
+#+END_SRC
+
+or
+
+#+BEGIN_SRC 
+@register _IPU_CPMEM-W0
+  @template
+  # part of iMX6 CPMEM description which consists of two 
+  # 160 bit sized blocks
+  @addr 0x00000000 160
+  @field BM
+    @bits 118-117
+    @enum 0 "no block mode"
+    @enum 1 "BW=8, BH=8"
+    @enum 2 "BW=16, BH=16"
+#+END_SRC
+
+* Tools
+
+** =decode-registers-gendesc=
+
+Base tool to compile the description files:
+
+#+BEGIN_SRC 
+usage: decode-registers-gendesc [-h] [--define <symbol>] [--c-fill <file>]
+                                [--c-defines <file>] [--datastream <file>]
+                                [--datastream-c <file>] [--endian big|little]
+                                [--unit-only <unit>] [--unit-exclude <unit>]
+                                [--bga <bga>]
+                                opt_directory
+
+positional arguments:
+  opt_directory
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --define <symbol>, -D <symbol>
+                        define a symbol
+  --c-fill <file>       output C code
+  --c-defines <file>    output C symbols
+  --datastream <file>   output raw datastream
+  --datastream-c <file>
+                        output raw datastream as C source
+  --endian big|little   endianess of raw datastream
+  --unit-only <unit>    include only listed unit files
+  --unit-exclude <unit>
+                        exclude listed unit files
+  --bga <bga>           BGA to be used when generating pin definitions
+#+END_SRC
+
+*** Output format: =datastream=
+
+Raw binary datastream; given to =decode-device= as the =--definitions=
+data stream
+
+*** Output format: =c-fill=
+
+This mode is great for debugging the generated stream; this will
+produce C code fragments like
+
+#+BEGIN_SRC c
+push_u16(5);                        /* number of units */
+{ /* {{{ 8BIT unit */
+  push_u32(0x00000000);             /* memory start address */
+  push_u32(0x000000ff);             /* memory end address */
+  push_data16( 4, "8BIT");          /* Unit id */
+  push_data16( 4, "8BIT");          /* Unit name */
+  push_u8(0);                       /* addr width */
+  push_u8(UNIT_ENDIAN_BIG);
+  push_u16(1);                      /* number of registers */
+  { /* {{{ registers */
+    { /* {{{ ID register */
+      push_u32(0x00000000);         /* offset */
+      push_u8(8);                   /* width */
+      push_u8(3);                   /* flags */
+      push_data16( 7, "8BIT_ID");   /* id */
+      push_data16( 2, "ID");        /* name */
+      push_u16(4);                  /* number of fields */
+      { /* {{{ 4 fields */
+        { /* {{{ VVBI field */
+          push_u8(3);               /* flags */
+          push_data16( 4, "VVBI");  /* id */
+          push_data16( 4, "VVBI");  /* name */
+          push_u8(TYPE_SINT);
+          push_u8(0xf);             /* sint [3, 2, 1, 0]/8 */
+        } /* }}} VVBI field */
+#+END_SRC
+
+*** Output format: =datasteam-c=
+
+Example:
+
+#+BEGIN_SRC c
+  0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x04, 0x00,
+  0x38, 0x42, 0x49, 0x54, 0x04, 0x00, 0x38, 0x42, 0x49, 0x54, 0x00, 0x02,
+  0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x03, 0x07, 0x00, 0x38, 0x42,
+#+END_SRC
+
+*** Output format: =c-defines=
+
+There are some magic values in certain fields (type, flags); C
+=#define= values are created in this mode:
+
+#+BEGIN_SRC c
+#define UNIT_ENDIAN_BIG             2 /* big endian */
+#define REGISTER_FLAG_ACCESS_READ   1 /* read access */
+#define REGISTER_FLAG_ACCESS_WRITE  2 /* write access */
+#define FIELD_FLAG_ACCESS_READ      1 /* read access */
+#define FIELD_FLAG_ACCESS_WRITE     2 /* write access */
+#+END_SRC
+
+** =decode-device=
+
+This tools takes a =datastream= file and dumps register content.  It supports:
+
+- emulator mode :: no real device access; interpretes data given by
+                   =--value=
+
+- i2c :: acesses an i2c device (=/dev/i2c-X=)
+
+- memory :: real devices memory (=/dev/mem=)
+
+*** Examples
+
+**** dump whole register set
+
+#+BEGIN_SRC
+$ decode-device --type emu --definitions regstream-tw99x0.bin --value 0x23
+======================== GENERIC ==============================
+0x00000000 ID                           0x23
+  revision                            : 3
+  id                                  : 4
+
+0x00000001 STATUS1                      0x23
+  DET50                               : 50Hz
+  MONO                                : true
+  VLOCK                               : false
+  FIELD                               : false
+  SLOCK                               : true
+  HLOCK                               : false
+  VDLOSS                              : false
+#+END_SRC
+
+**** select register
+
+#+BEGIN_SRC
+decode-device -T emu -d regstream-mx6q.bin @IPU1-CPMEM CH-I#0\* -v 42
+======================== IPU1-CPMEM ==============================
+0x02700000 CH-I#0_0                     0x00000000.00000000.00000000.00000000.0000002a
+  XV                                  : 42
+  YV                                  : 0
+...
+0x02700014 CH-I#0_1                     0x00000000.00000000.00000000.00000000.0000002a
+  EBA0                                : 0x0000002a
+  EBA1                                : 0x00000000
+  ILO                                 : 0
+#+END_SRC
