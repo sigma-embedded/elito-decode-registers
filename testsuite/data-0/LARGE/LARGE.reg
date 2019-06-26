@@ -1,7 +1,7 @@
 @register A
   @addr 0x0000
   @field LONG
-    @uint 79-10
+    @uint 79-16
   @field DESC
     @bits 99-96 1
     @enum 0 "e"
