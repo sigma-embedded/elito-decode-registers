@@ -384,6 +384,7 @@ class Field(block.Block, block.Mergeable, block.Removable):
         res.__desc = self.__desc
         res.__frac = self.__frac
         res.__flags = self.__flags
+        res.children = self.children
         return res
 
     def _assign_description(self, desc):
