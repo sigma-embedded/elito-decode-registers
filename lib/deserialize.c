@@ -51,6 +51,24 @@
 	} while (0)
 #endif
 
+#define _ffs(_v)						\
+	_Generic(_v,						\
+		 unsigned char: __builtin_ffs(_v),		\
+		 unsigned short: __builtin_ffs(_v),		\
+		 unsigned int: __builtin_ffs(_v),		\
+		 unsigned long: __builtin_ffsl(_v),		\
+		 unsigned long long: __builtin_ffsll(_v))
+
+#define _popcount(_v)						\
+	_Generic(_v,						\
+		 unsigned char: __builtin_popcount(_v),		\
+		 unsigned short: __builtin_popcount(_v),	\
+		 unsigned int: __builtin_popcount(_v),		\
+		 unsigned long: __builtin_popcountl(_v),	\
+		 unsigned long long: __builtin_popcountll(_v))
+
+#define _bit_type(_t, _p) (((__typeof__(_t))1u) << (_p))
+
 static regmax_t get_masked_value(reg_t const *v_ext,
 				 reg_t const *mask_ext,
 				 struct cpu_register const *reg)
@@ -76,12 +94,12 @@ static regmax_t get_masked_value(reg_t const *v_ext,
 		memcpy(&mask, m_in, sizeof mask);
 
 		while (mask) {
-			int	p = __builtin_ffs(mask) - 1;
+			int	p = _ffs(mask) - 1;
 
 			res  |= ((v >> p) & 1) << pos;
 			++pos;
 
-			mask &= ~(1 << p);
+			mask &= ~_bit_type(mask, p);
 		}
 
 		v_in += sizeof v;
@@ -97,12 +115,12 @@ static regmax_t get_masked_value(reg_t const *v_ext,
 		memcpy(&mask, m_in, sizeof mask);
 
 		while (mask) {
-			int	p = __builtin_ffs(mask) - 1;
+			int	p = _ffs(mask) - 1;
 
 			res  |= ((v >> p) & 1) << pos;
 			++pos;
 
-			mask &= ~(1 << p);
+			mask &= ~_bit_type(mask, p);
 		}
 
 		v_in += sizeof v;
@@ -125,7 +143,7 @@ unsigned int deserialize_popcount(reg_t const *reg, unsigned int width)
 	width = (width + 7) / 8;
 
 	for (size_t i = 0; i < width; ++i)
-		res += __builtin_popcount(reg->raw[i]);
+		res += _popcount(reg->raw[i]);
 
 	return res;
 }
