@@ -1,0 +1,3 @@
+@unit CLONE
+  @reg 0 0x1000
+  @registers CLONE/

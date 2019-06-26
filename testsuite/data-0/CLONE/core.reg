@@ -1,0 +1,19 @@
+@register _BASE
+  @addr 0
+  @field ENUM
+    @bits 3-1
+    @enum 0 "ENUM-0"
+    @enum 1 "ENUM-1"
+
+@register _BASE-V0
+  @addr 4
+  @use _BASE
+  @field ENUM
+    @enum 1 -
+    @enum 2 "ENUM-2"
+
+@register DERIVE-V0
+  @use _BASE-V0
+  @addr 8
+  @field ENUM
+    @enum 3 "ENUM-3"
