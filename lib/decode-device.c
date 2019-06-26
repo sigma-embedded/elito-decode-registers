@@ -100,7 +100,7 @@ struct device_i2c {
 
 struct device_mem {
 	int			fd;
-	void const		*mem;
+	void const volatile	*mem;
 	uintptr_t		page;
 	size_t			page_sz;
 	bool			is_mapped;
@@ -416,9 +416,9 @@ static void device_mem_deinit(struct device *dev)
 static int device_mem_read(struct device *dev, uintptr_t addr,
 			   unsigned int width, reg_t *val)
 {
-	struct device_mem	*mdev = &dev->mem;
-	uintptr_t		page = addr & ~(mdev->page_sz - 1);
-	void const		*mem;
+	struct device_mem		*mdev = &dev->mem;
+	uintptr_t			page = addr & ~(mdev->page_sz - 1);
+	union uinttype const volatile	*mem;
 
 	if (!mdev->is_mapped || mdev->page != page) {
 		if (mdev->is_mapped) {
@@ -443,23 +443,32 @@ static int device_mem_read(struct device *dev, uintptr_t addr,
 
 	switch (width) {
 	case 8:
-		memcpy(&val->u8, mem, sizeof val->u8);
+		val->u8 = mem->u8;
 		break;
 	case 16:
-		memcpy(&val->u16, mem, sizeof val->u16);
+		val->u16 = mem->u16;
 		break;
 	case 32:
-		memcpy(&val->u32, mem, sizeof val->u32);
+		val->u32 = mem->u32;
 		break;
 	case 64:
-		memcpy(&val->u64, mem, sizeof val->u64);
+		val->u64 = mem->u64;
 		break;
-	default:
+	default: {
+		int const volatile	*inp = (void const *)mem;
+		int			*out = (void *)val->raw;
+
 		/* ensure that we stay on the same page */
 		BUG_ON(((addr + (width + 7) / 8) | (mdev->page_sz - 1)) !=
 		       (addr  | (mdev->page_sz - 1)));
-		memcpy(&val->u64, mem, sizeof val->u64);
+
+		BUG_ON((width % (8 * sizeof(int))) != 0);
+
+		for (size_t i = 0; i < width; i += 8 * sizeof(int))
+			*out++ = *inp++;
+
 		break;
+	}
 	}
 
 	return 0;
