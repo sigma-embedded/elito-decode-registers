@@ -2,6 +2,16 @@ stages:
   - build
   - deploy
 
+.build:extra-dist:
+  stage: build
+  except:
+    variables:
+      - $CI_BUILD_TRIGGERED
+  script:
+    - make clean
+    - make all
+    - make tests
+
 build:
   stage: build
   coverage: /^\s*Total:\|(\d+\.\d+\%)\s+.*$/
@@ -23,6 +33,14 @@ build:
   - make clean
   - scan-build make tests
   - make clean
+
+build:debian:jessie:
+  extends: .build:extra-dist
+  image: $CI_REGISTRY/docker/sigma/ci/elito-debian:jessie
+
+build:debian:sid:
+  extends: .build:extra-dist
+  image: $CI_REGISTRY/docker/sigma/ci/elito-debian:sid
 
 .downstream-trigger: &downstream_trigger
   allow_failure: true
