@@ -17,6 +17,10 @@
 import generator
 import struct
 
+### required for legacy code path
+## REMOVE ME after 2021-01-01
+import sys
+
 class Endianess:
     def __init__(self, fmt, str):
         self.fmt = fmt
@@ -73,6 +77,11 @@ class CodeFactory(generator.CodeFactory):
     def __xform_c_array(self, val):
         if len(val) == 0:
             return ''
+
+        if sys.hexversion < 0x3050000:
+            ## HACK: workaround ancient python versions
+            ## REMOVE ME after 2021-01-01
+            return b', '.join(map(lambda x: ('0x%02x' % x).encode('ascii'), val)) + b',\n'
 
         return b', '.join(map(lambda x: b'0x%02x' % x, val)) + b',\n'
 
