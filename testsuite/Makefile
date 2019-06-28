@@ -13,7 +13,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 PYTHON3 ?=	/usr/bin/python3
-XXD =		xxd
 CHECKER ?=
 VALGRIND ?=	valgrind --quiet --tool=memcheck --leak-check=full --show-leak-kinds=all --error-exitcode=23
 
@@ -52,19 +51,17 @@ clean:
 test-deserialize:	${test-deserialize_SOURCES} test-deserialize_symbols.h test-deserialize_stream.h
 	$(call build_sym)
 
-%_symbols.h %_fill.c %_stream.bin:	.gendesc-%.stamp
+%_symbols.h %_fill.c %_stream.bin %_stream.h:	.gendesc-%.stamp
 	@:
 
 .gendesc-%.stamp:	../src/gendesc Makefile
-	rm -f $*_*.tmp $*_symbols.h $*_fill.c $*_stream.bin
-	$(PYTHON3) $< --c-defines $*_symbols.h.tmp --c-fill $*_fill.c.tmp --datastream $*_stream.bin.tmp ${TEST_$*_DEFS}
+	rm -f $*_*.tmp $*_symbols.h $*_fill.c $*_stream.bin $*_stream.h
+	$(PYTHON3) $< --c-defines $*_symbols.h.tmp --c-fill $*_fill.c.tmp --datastream $*_stream.bin.tmp --datastream-c $*_stream.h.tmp ${TEST_$*_DEFS}
 	mv $*_symbols.h.tmp $*_symbols.h
 	mv $*_fill.c.tmp $*_fill.c
 	mv $*_stream.bin.tmp $*_stream.bin
+	mv $*_stream.h.tmp $*_stream.h
 	@touch $@
-
-%_stream.h:	%_stream.bin
-	$(XXD) -i < $< > $@
 
 .run-tests:	..run-test-deserialize ..run-test-decode
 
