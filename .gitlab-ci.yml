@@ -35,6 +35,9 @@ build:
   - make clean
 
 build:debian:jessie:
+  variables:
+    ## avoid -Werror for ancient distributions
+    CFLAGS: "-O2 -g3 -D_FORTIFY_SOURCE=2 -fstack-protector"
   extends: .build:extra-dist
   image: $CI_REGISTRY/docker/sigma/ci/elito-debian:jessie
 
