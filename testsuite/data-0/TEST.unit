@@ -40,7 +40,7 @@
 
 
 @unit LARGE
-  @reg  0x4000 0x100
+  @reg  0xf0020000 0x1000
   @regwidth 160 32 BE
   @registers LARGE/
 
