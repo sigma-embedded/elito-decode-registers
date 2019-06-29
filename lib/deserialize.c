@@ -51,6 +51,15 @@
 	} while (0)
 #endif
 
+/* workaround for ancient gcc versions
+ * REMOVE ME after 2021-01-01 */
+#if __GNUC__ == 4 && __GNUC_MINOR__ < 9
+
+#  define _ffs(_v)	__builtin_ffsll(_v)
+#  define _popcount(_v)	__builtin_popcountll(_v)
+
+#else
+
 #define _ffs(_v)						\
 	_Generic(_v,						\
 		 unsigned char: __builtin_ffs(_v),		\
@@ -66,6 +75,8 @@
 		 unsigned int: __builtin_popcount(_v),		\
 		 unsigned long: __builtin_popcountl(_v),	\
 		 unsigned long long: __builtin_popcountll(_v))
+
+#endif	/* __GNUC__ */
 
 #define _bit_type(_t, _p) (((__typeof__(_t))1u) << (_p))
 
