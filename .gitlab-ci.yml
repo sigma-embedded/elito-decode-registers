@@ -45,6 +45,15 @@ build:debian:sid:
   extends: .build:extra-dist
   image: $CI_REGISTRY/docker/sigma/ci/elito-debian:sid
 
+build:ubuntu:trusty:
+  variables:
+    ## avoid -Werror for ancient distributions
+    CFLAGS: "-O2 -g3 -D_FORTIFY_SOURCE=2 -fstack-protector"
+  extends: .build:extra-dist
+  image: $CI_REGISTRY/docker/sigma/ci/elito-ubuntu:trusty
+
+#####
+
 .downstream-trigger: &downstream_trigger
   allow_failure: true
   stage: build
