@@ -174,10 +174,10 @@ static void letor(reg_t *dst, union uinttype const *src, unsigned int width)
 		dst->u16 = le16toh(src->u16);
 		break;
 	case 32:
-		dst->u32 = le16toh(src->u32);
+		dst->u32 = le32toh(src->u32);
 		break;
 	case 64:
-		dst->u64 = le16toh(src->u64);
+		dst->u64 = le64toh(src->u64);
 		break;
 	default:
 		abort();
@@ -215,10 +215,10 @@ static void betor(reg_t *dst, union uinttype const *src, unsigned int width)
 		dst->u16 = be16toh(src->u16);
 		break;
 	case 32:
-		dst->u32 = be16toh(src->u32);
+		dst->u32 = be32toh(src->u32);
 		break;
 	case 64:
-		dst->u64 = be16toh(src->u64);
+		dst->u64 = be64toh(src->u64);
 		break;
 	default:
 		abort();
