@@ -105,9 +105,11 @@ static regmax_t get_masked_value(reg_t const *v_ext,
 		memcpy(&mask, m_in, sizeof mask);
 
 		while (mask) {
-			int	p = _ffs(mask) - 1;
+			int		p = _ffs(mask) - 1;
+			regmax_t	tmp = ((v >> p) & 1);
 
-			res  |= ((v >> p) & 1) << pos;
+			tmp <<= pos;
+			res  |= tmp;
 			++pos;
 
 			mask &= ~_bit_type(mask, p);
@@ -126,9 +128,11 @@ static regmax_t get_masked_value(reg_t const *v_ext,
 		memcpy(&mask, m_in, sizeof mask);
 
 		while (mask) {
-			int	p = _ffs(mask) - 1;
+			int		p = _ffs(mask) - 1;
+			regmax_t	tmp = ((v >> p) & 1);
 
-			res  |= ((v >> p) & 1) << pos;
+			tmp <<= pos;
+			res  |= tmp;
 			++pos;
 
 			mask &= ~_bit_type(mask, p);
