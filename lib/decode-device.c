@@ -23,9 +23,14 @@
 
 #include "common.h"
 
+#ifndef DEFAULT_PAGER
+#  define DEFAULT_PAGER		"less -R"
+#endif
+
 #define CMD_HELP                0x1000
 #define CMD_VERSION             0x1001
 #define CMD_NOCOLOR             0x1002
+#define CMD_NOPAGER             0x1003
 
 static char const			CMDLINE_SHORT[] = \
 	"CT:D:A:v:d:";
@@ -40,6 +45,7 @@ static struct option const		CMDLINE_OPTIONS[] = {
 	{ "definitions",  required_argument, 0, 'd' },
 	{ "color",        no_argument,       0, 'C' },
 	{ "no-color",     no_argument,       0, CMD_NOCOLOR },
+	{ "no-pager",	  no_argument,       0, CMD_NOPAGER },
 	{ NULL, 0, 0, 0 }
 };
 
@@ -696,6 +702,44 @@ static bool unit_match(struct cpu_unit const *unit, struct ctx *ctx)
 	return rc;
 }
 
+static void run_pager(void)
+{
+	char const	*pager = getenv("PAGER");
+	pid_t		pid;
+	int		pfds[2];
+	int		rc;
+
+	if (!pager)
+		pager = DEFAULT_PAGER;
+
+	rc = pipe(pfds);
+	if (rc < 0) {
+		perror("pipe()");
+		return;
+	}
+
+	pid = fork();
+	if (pid < 0) {
+		perror("fork()");
+		close(pfds[0]);
+		close(pfds[1]);
+		return;
+	}
+
+	if (pid == 0) {
+		col_init(-1);
+		dup2(pfds[1], 1);
+		close(pfds[0]);
+		return;
+	}
+
+	dup2(pfds[0], 0);
+	close(pfds[1]);
+
+	execl("/bin/sh", "/bin/sh", "-c", pager, (char *)NULL);
+	perror("execl()");
+}
+
 int main(int argc, char *argv[])
 {
 	enum device_type	dev_type = DEVTYPE_NONE;;
@@ -708,6 +752,7 @@ int main(int argc, char *argv[])
 	struct ctx		ctx = {};
 	uintptr_t		addr_start = 0;
 	uintptr_t		addr_end   = ~(uintptr_t)0;
+	bool			no_pager = false;
 
 	while (1) {
 		int         c = getopt_long(argc, argv,
@@ -760,6 +805,10 @@ int main(int argc, char *argv[])
 
 		case CMD_NOCOLOR:
 			col_init(0);
+			break;
+
+		case CMD_NOPAGER:
+			no_pager = true;
 			break;
 
 		default:
@@ -830,6 +879,9 @@ int main(int argc, char *argv[])
 
 	if (rc != EX_OK)
 		goto out;
+
+	if (!no_pager && isatty(1))
+		run_pager();
 
 	if (!ctx.unit_glob) {
 		rc = deserialize_decode_range(definitions.units,
