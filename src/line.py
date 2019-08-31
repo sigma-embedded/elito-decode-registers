@@ -129,7 +129,7 @@ class Line:
                     state = 2
             elif state == 1:
                 # comment
-                if l[-1] == '\\':
+                if len(l) > 0 and l[-1] == '\\':
                     state = 98
                 else:
                     state = 99
