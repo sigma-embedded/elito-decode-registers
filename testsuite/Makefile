@@ -65,15 +65,18 @@ test-deserialize:	${test-deserialize_SOURCES} test-deserialize_symbols.h test-de
 
 .run-tests:	..run-test-deserialize ..run-test-decode
 
+_decode_prog_raw = ${CHECKER} $(abspath $<)
+_decode_prog = ${_decode_prog_raw} --type emu --definitions $(filter %.bin,$^)
+
 ..run-test-decode:	../decode-device test-deserialize_stream.bin FORCE
-	${CHECKER} $(abspath $<) --help $(TEST_OUTPUT)
-	${CHECKER} $(abspath $<) --version $(TEST_OUTPUT)
-	${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^)  ${TEST_OUTPUT}
-	${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^) -C ${TEST_OUTPUT}
-	${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^) @Test-0       ${TEST_OUTPUT}
-	! ${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^) @no-match   2>/dev/null
-	${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^) @Test-0 IRQ\* ${TEST_OUTPUT}
-	! ${CHECKER} $(abspath $<) --type emu --definitions $(filter %.bin,$^) @Test-0 no-match 2>/dev/null
+	${_decode_prog_raw} --help $(TEST_OUTPUT)
+	${_decode_prog_raw} --version $(TEST_OUTPUT)
+	${_decode_prog} ${TEST_OUTPUT}
+	${_decode_prog} -C ${TEST_OUTPUT}
+	${_decode_prog} @Test-0       ${TEST_OUTPUT}
+	! ${_decode_prog} @no-match   2>/dev/null
+	${_decode_prog}   @Test-0 IRQ\* ${TEST_OUTPUT}
+	! ${_decode_prog} @Test-0 no-match 2>/dev/null
 
 ..run-test-deserialize:	test-deserialize FORCE
 	env -u TEST_HEAP_ALLOC ${CHECKER} $(abspath $<) ${TEST_OUTPUT}
