@@ -59,7 +59,7 @@ GENHTML ?=	genhtml
 GENHTML_DIR ?=	lcov/html
 
 PYTHON3 ?=	/usr/bin/python3
-SED = 		sed
+SED =		sed
 
 SED_CMD = \
 	-e 's!@PYDIR@!$(pydir)!g' \

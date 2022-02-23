@@ -94,7 +94,7 @@ static void do_fill(void)
 	(void)push_u16;
 	(void)push_u8;
 
-#include "registers.h"	
+#include "registers.h"
 }
 
 int main(void)
@@ -103,7 +103,7 @@ int main(void)
 
 	for (;;) {
 		void *	tmp;
-		
+
 		tmp = realloc(buf, l);
 		if (!tmp)
 			abort();
@@ -111,7 +111,7 @@ int main(void)
 		buf = tmp;
 		out_ptr = buf;
 		end_ptr = buf + l;
-	
+
 		if (setjmp(alloc_jmp) > 0) {
 			l *= 2;
 			continue;
