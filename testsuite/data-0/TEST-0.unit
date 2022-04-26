@@ -2,3 +2,13 @@
   @reg 0x4000 0x1000
   @regwidth 32 20 LE
   @registers IC/
+
+@unit Test-1
+  @reg 0x5000 0x1000
+  @regwidth 32 20 BE LE
+  @registers IC/
+
+@unit Test-2
+  @reg 0x6000 0x1000
+  @regwidth 32 20 LE BE
+  @registers IC/
