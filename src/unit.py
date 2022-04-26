@@ -70,7 +70,7 @@ class Unit(block.Block, block.Mergeable):
                 '@name' : 1,
                 '@description' : 1,
                 '@reg' : 2,
-                '@regwidth' : [1, 3],
+                '@regwidth' : [1, 4],
             }
 
             return self._validate_ranges(l, ARG_RANGES)
@@ -99,7 +99,7 @@ class Unit(block.Block, block.Mergeable):
                 if len(l) > 2:
                     self.o._assign_addrwidth(int(l[2]))
                 if len(l) > 3:
-                    self.o._assign_endian(l[3])
+                    self.o._assign_endian(l[3], l[4] if len(l) > 4 else None)
             else:
                 assert(False)
 
@@ -125,7 +125,8 @@ class Unit(block.Block, block.Mergeable):
         self.__memory = None
         self.__regwidth = None
         self.__addrwidth = None
-        self.__endian = None
+        self.__endian_addr = None
+        self.__endian_data = None
         self.bga = top.bga
 
     def __str__(self):
@@ -161,11 +162,17 @@ class Unit(block.Block, block.Mergeable):
             raise Exception("address width too large")
         self.__addrwidth = width
 
-    def _assign_endian(self, endian):
-        self.__endian = {
+    def _assign_endian(self, endian_addr, endian_data):
+        self.__endian_addr = {
             'LE' : Unit.ENDIAN_LITTLE,
             'BE' : Unit.ENDIAN_BIG
-        }[endian]
+        }[endian_addr]
+
+        self.__endian_data = {
+            'LE' : Unit.ENDIAN_LITTLE,
+            'BE' : Unit.ENDIAN_BIG,
+            None : self.__endian_addr,
+        }[endian_data]
 
     def get_id(self):
         return self.__id
@@ -232,21 +239,33 @@ class Unit(block.Block, block.Mergeable):
     def _merge_post(self):
         self.finalize()
 
+    @staticmethod
+    def __endian_symbol_part(end):
+        if end == Unit.ENDIAN_NATIVE:
+            return 'NATIVE';
+        elif end == Unit.ENDIAN_LITTLE:
+            return 'LITTLE';
+        elif end == Unit.ENDIAN_BIG:
+            return 'BIG';
+        else:
+            raise Exception("INTERNAL ERROR: unsupported endian %s" % end)
+
+    @staticmethod
+    def __endian_symbol(end_addr, end_data):
+        end_addr_part = Unit.__endian_symbol_part(end_addr);
+        end_data_part = Unit.__endian_symbol_part(end_data);
+
+        return generator.Symbol('UNIT_ENDIAN_%s_%s' % (end_addr_part, end_data_part),
+                                (end_addr << 4) | (end_data << 0), "endianess")
+
     def generate_code(self, top):
         if not self.__is_enabled:
             return None
 
         code = top.create_block('%s unit' % self.__id)
 
-        end = self.get_endian()
-        if end == Unit.ENDIAN_NATIVE:
-            end_sym = generator.Symbol("UNIT_ENDIAN_NATIVE", end, "native endian")
-        elif end == Unit.ENDIAN_LITTLE:
-            end_sym = generator.Symbol("UNIT_ENDIAN_LITTLE",end, "little endian")
-        elif end == Unit.ENDIAN_BIG:
-            end_sym = generator.Symbol("UNIT_ENDIAN_BIG", end, "big endian")
-        else:
-            raise Exception("INTERNAL ERROR: unsupported endian %s" % end)
+        end_sym = Unit.__endian_symbol(self.get_endian_addr(),
+                                       self.get_endian_data())
 
         code.add_symbol(end_sym)
 
@@ -262,7 +281,7 @@ class Unit(block.Block, block.Mergeable):
         regs.sort(key = functools.cmp_to_key(lambda a, b: a.cmp_by_addr(a, b)))
 
         code.add_u8(self.get_addrwidth(), "addr width", "%u")
-        code.add_type(end_sym, None)
+        code.add_type(end_sym, "endianess")
         code.add_size_t(len(regs), "number of registers")
         block0 = code.create_block("registers")
 
@@ -286,5 +305,8 @@ class Unit(block.Block, block.Mergeable):
     def get_addrwidth(self):
         return self.__addrwidth or 0
 
-    def get_endian(self):
-        return self.__endian or Unit.ENDIAN_NATIVE
+    def get_endian_data(self):
+        return self.__endian_data or Unit.ENDIAN_NATIVE
+
+    def get_endian_addr(self):
+        return self.__endian_addr or Unit.ENDIAN_NATIVE
