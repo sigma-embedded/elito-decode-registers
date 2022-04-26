@@ -40,7 +40,7 @@ decode-device_SOURCES = \
 
 prefix ?= /usr/local
 bindir ?= ${prefix}/bin
-datadir ?= ${prefix}/data
+datadir ?= ${prefix}/share
 pkgdatadir ?= ${datadir}/${PACKAGE}
 pydir ?= ${pkgdatadir}/py
 chdir ?= ${pkgdatadir}/c
