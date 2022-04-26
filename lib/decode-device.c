@@ -100,7 +100,8 @@ struct device_emu {
 struct device_i2c {
 	int			fd;
 	unsigned int		i2c_addr;
-	enum endianess		endianess;
+	enum endianess		endian_addr;
+	enum endianess		endian_data;
 	unsigned int		addr_width;
 };
 
@@ -264,7 +265,7 @@ static int device_i2c_read(struct device *dev, uintptr_t addr,
 		.nmsgs	= 2,
 	};
 
-	switch (i2c->endianess) {
+	switch (i2c->endian_addr) {
 	case ENDIAN_LITLLE:
 		htole(&e_addr, addr, i2c->addr_width);
 		break;
@@ -281,7 +282,7 @@ static int device_i2c_read(struct device *dev, uintptr_t addr,
 		return rc;
 	}
 
-	switch (i2c->endianess) {
+	switch (i2c->endian_data) {
 	case ENDIAN_LITLLE:
 		letor(val, &tmp, width);
 		break;
@@ -295,11 +296,31 @@ static int device_i2c_read(struct device *dev, uintptr_t addr,
 	return 0;
 }
 
+enum endianess desc_to_endian(struct cpu_unit const *unit, uint8_t v)
+{
+	switch (v) {
+	case UNIT_ENDIAN_BIG:
+		return ENDIAN_BIG;
+		break;
+	case UNIT_ENDIAN_LITTLE:
+		return ENDIAN_LITLLE;
+		break;
+	case UNIT_ENDIAN_NATIVE:
+		/* endianess on i2c is usually big... */
+		return ENDIAN_BIG;
+		break;
+	default:
+		fprintf(stderr,
+			"unsupported endianess %d in unit %" STR_FMT "\n",
+			v, STR_ARG(&unit->name));
+		abort();
+	}
+}
+
 static void device_i2c_select_unit(struct device *dev,
 				   struct cpu_unit const *unit)
 {
 	unsigned int	addr_width;
-	enum endianess	endian;
 
 	switch (unit->addr_width) {
 	case 0:
@@ -318,27 +339,10 @@ static void device_i2c_select_unit(struct device *dev,
 		abort();
 	}
 
-	switch (unit->endian) {
-	case UNIT_ENDIAN_BIG:
-		endian = ENDIAN_BIG;
-		break;
-	case UNIT_ENDIAN_LITTLE:
-		endian = ENDIAN_LITLLE;
-		break;
-	case UNIT_ENDIAN_NATIVE:
-		/* endianess on i2c is usually big... */
-		endian = ENDIAN_BIG;
-		break;
-	default:
-		fprintf(stderr,
-			"unsupported endinaess %d in unit %" STR_FMT "\n",
-			unit->endian, STR_ARG(&unit->name));
-		abort();
-	}
-
 	if (dev) {
-		dev->i2c.addr_width = addr_width;
-		dev->i2c.endianess  = endian;
+		dev->i2c.addr_width  = addr_width;
+		dev->i2c.endian_addr = desc_to_endian(unit, (unit->endian >> 4) & 0x0fu);
+		dev->i2c.endian_data = desc_to_endian(unit, (unit->endian >> 0) & 0x0fu);
 	}
 }
 
@@ -370,7 +374,8 @@ static int device_i2c_init(struct device *dev, char const *bus_device,
 			.fd		= fd,
 			.i2c_addr	= addr,
 			.addr_width	= 8,
-			.endianess	= ENDIAN_BIG,
+			.endian_addr	= ENDIAN_BIG,
+			.endian_data	= ENDIAN_BIG,
 		},
 		.ops		= &device_ops_i2c,
 	};
