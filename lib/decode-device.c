@@ -43,6 +43,7 @@ static struct option const		CMDLINE_OPTIONS[] = {
 	{ "bus-addr",     required_argument, 0, 'A' },
 	{ "value",        required_argument, 0, 'v' },
 	{ "definitions",  required_argument, 0, 'd' },
+	{ "offset",	  required_argument, 0, 'O' },
 	{ "color",        no_argument,       0, 'C' },
 	{ "no-color",     no_argument,       0, CMD_NOCOLOR },
 	{ "no-pager",	  no_argument,       0, CMD_NOPAGER },
@@ -56,6 +57,7 @@ static void show_help(void)
 	       "    --type|-T <type> --definitions|-d <file>\n"
 	       "    [--bus-device|-D <device>] [--bus-addr|-A <addr>]\n"
 	       "    [--value|-v <value>] [--color|-C] [--no-color]\n"
+	       "    [--offset|-O <value>]\n"
 	       "\n"
 	       "Required options:\n"
 	       "    - I2C: --bus-device (e.g. '/dev/i2c-2'), --bus-addr,\n"
@@ -131,6 +133,7 @@ struct ctx {
 	struct cpu_unit const		*last_unit;
 
 	unsigned int			num_shown;
+	intptr_t			offset;
 
 	char const			*unit_glob;
 	char const			*reg_glob;
@@ -546,6 +549,22 @@ static bool parse_uint(uintmax_t *v, char const *str)
 	return true;
 }
 
+static bool parse_sint(intmax_t *v, char const *str)
+{
+	char			*err;
+	signed long long	tmp;
+
+	errno = 0;
+	tmp = strtoll(str, &err, 0);
+	if (err == str || *err || errno != 0) {
+		fprintf(stderr, "invalid numeric value '%s'\n", str);
+		return false;
+	}
+
+	*v = tmp;
+	return true;
+}
+
 static void definitions_release(struct definitions *def)
 {
 	free((void *)def->mem);
@@ -658,11 +677,20 @@ static int _decode_reg(struct cpu_register const *reg, void *ctx_)
 	char			sbuf[REGISTER_PRINT_SZ];
 	struct ctx		*ctx = ctx_;
 	unsigned long		addr = reg->offset + reg->unit->start;
+	unsigned long		addr_rel;
 	reg_t			val;
 	int			rc;
 
 	if (!reg_match(reg, ctx))
 		return 0;
+
+	if (__builtin_add_overflow(addr, ctx->offset, &addr_rel)) {
+		fprintf(stderr, "overflow in 0x%08lx%c0x%08lx\n",
+			addr,
+			ctx->offset < 0 ? '-' : '+',
+			(signed long)(ctx->offset < 0 ? -ctx->offset : ctx->offset));
+		return EX_CONFIG;
+	}
 
 	if (reg->unit != ctx->last_unit) {
 		col_printf("%s======================== %" STR_FMT " ==============================",
@@ -675,7 +703,7 @@ static int _decode_reg(struct cpu_register const *reg, void *ctx_)
 		ctx->last_unit = reg->unit;
 	}
 
-	rc = ctx->dev.ops->read(&ctx->dev, addr, reg->width, &val);
+	rc = ctx->dev.ops->read(&ctx->dev, addr_rel, reg->width, &val);
 	if (rc < 0)
 		return rc;
 
@@ -796,6 +824,13 @@ int main(int argc, char *argv[])
 		case 'v':
 			if (!parse_uint(&value, optarg)) {
 				fprintf(stderr, "invalid --value\n");
+				return EX_USAGE;
+			}
+			break;
+
+		case 'O':
+			if (!parse_sint(&ctx.offset, optarg)) {
+				fprintf(stderr, "invalid --offset\n");
 				return EX_USAGE;
 			}
 			break;
