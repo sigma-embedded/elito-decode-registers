@@ -22,6 +22,7 @@
 #include "all-symbols.h"
 
 #include "common.h"
+#include "compat.h"
 
 #ifndef DEFAULT_PAGER
 #  define DEFAULT_PAGER		"less -R"
