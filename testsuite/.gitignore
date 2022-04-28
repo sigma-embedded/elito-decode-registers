@@ -1,3 +1,4 @@
+/test-compat
 /test-deserialize
 /test-deserialize_fill.c
 /test-deserialize_stream.bin

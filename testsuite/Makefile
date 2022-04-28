@@ -22,12 +22,17 @@ CFLAGS ?=	-O1 -g3 -Werror -D_FORTIFY_SOURCE=2 -fstack-protector
 LDFLAGS ?=
 
 test_PROGRAMS = \
-  test-deserialize
+  test-deserialize \
+  test-compat \
 
 test-deserialize_SOURCES = \
   test-deserialize.c \
   ../lib/deserialize.c \
   ../lib/deserialize.h
+
+test-compat_SOURCES = \
+  test-compat.c \
+  ../lib/compat.h
 
 TEST_test-deserialize_DEFS = data-0
 
@@ -51,6 +56,9 @@ clean:
 test-deserialize:	${test-deserialize_SOURCES} test-deserialize_symbols.h test-deserialize_stream.h
 	$(call build_sym)
 
+test-compat:	${test-compat_SOURCES}
+	$(CC) $(AM_CFLAGS) $(CFLAGS) ${AM_LDFLAGS} ${LDFLAGS} $< -o $@
+
 %_symbols.h %_fill.c %_stream.bin %_stream.h:	.gendesc-%.stamp
 	@:
 
@@ -63,7 +71,7 @@ test-deserialize:	${test-deserialize_SOURCES} test-deserialize_symbols.h test-de
 	mv $*_stream.h.tmp $*_stream.h
 	@touch $@
 
-.run-tests:	..run-test-deserialize ..run-test-decode
+.run-tests:	..run-test-deserialize ..run-test-decode ..run-test-compat
 
 _decode_prog_raw = ${CHECKER} $(abspath $<) --no-pager
 _decode_prog = ${_decode_prog_raw} --type emu --definitions $(filter %.bin,$^)
@@ -81,6 +89,9 @@ _decode_prog = ${_decode_prog_raw} --type emu --definitions $(filter %.bin,$^)
 ..run-test-deserialize:	test-deserialize FORCE
 	env -u TEST_HEAP_ALLOC ${CHECKER} $(abspath $<) ${TEST_OUTPUT}
 	env TEST_HEAP_ALLOC=1  ${CHECKER} $(abspath $<) ${TEST_OUTPUT}
+
+..run-test-compat:	test-compat FORCE
+	${CHECKER} $(abspath $<)
 
 FORCE:
 .PHONY:		FORCE
