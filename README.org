@@ -60,7 +60,7 @@ Sample:
   @use _UART
   # physical address + unit size
   @reg 0x01230000 0x1000
-  
+
 @unit UART1
   @use _UART
   @reg 0x01240000 0x1000
@@ -76,7 +76,7 @@ Sample:
 
 Sample:
 
-#+BEGIN_SRC 
+#+BEGIN_SRC
 @register CTRL0
   # relative to containig unit address
   @addr 0x0000
@@ -97,7 +97,7 @@ Sample:
 
 or
 
-#+BEGIN_SRC 
+#+BEGIN_SRC
 @register RX
   # on cpu-a at address 0x02 but 8 bit access
   @addr[cpu-a] 0x0002 8
@@ -107,10 +107,10 @@ or
 
 or
 
-#+BEGIN_SRC 
+#+BEGIN_SRC
 @register _IPU_CPMEM-W0
   @template
-  # part of iMX6 CPMEM description which consists of two 
+  # part of iMX6 CPMEM description which consists of two
   # 160 bit sized blocks
   @addr 0x00000000 160
   @field BM
@@ -126,7 +126,7 @@ or
 
 Base tool to compile the description files:
 
-#+BEGIN_SRC 
+#+BEGIN_SRC
 usage: decode-registers-gendesc [-h] [--define <symbol>] [--c-fill <file>]
                                 [--c-defines <file>] [--datastream <file>]
                                 [--datastream-c <file>] [--endian big|little]
