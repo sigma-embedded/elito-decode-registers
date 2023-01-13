@@ -176,7 +176,7 @@ static void htole(union uinttype *dst, uintmax_t src, unsigned int width)
 	}
 }
 
-static void letor(reg_t *dst, union uinttype const *src, unsigned int width)
+static void letor(reg_t *dst, reg_t const *src, unsigned int width)
 {
 	switch (width) {
 	case 8:
@@ -192,7 +192,11 @@ static void letor(reg_t *dst, union uinttype const *src, unsigned int width)
 		dst->u64 = le64toh(src->u64);
 		break;
 	default:
-		abort();
+		if (width > sizeof dst->raw)
+			abort();
+
+		memcpy(dst->raw, src->raw, width);
+		break;
 	}
 }
 
@@ -217,7 +221,7 @@ static void htobe(union uinttype *dst, uintmax_t src, unsigned int width)
 }
 
 
-static void betor(reg_t *dst, union uinttype const *src, unsigned int width)
+static void betor(reg_t *dst, reg_t const *src, unsigned int width)
 {
 	switch (width) {
 	case 8:
@@ -233,6 +237,7 @@ static void betor(reg_t *dst, union uinttype const *src, unsigned int width)
 		dst->u64 = be64toh(src->u64);
 		break;
 	default:
+		/* TODO: implement raw big-endian to native conversion */
 		abort();
 	}
 }
@@ -247,7 +252,7 @@ static int device_i2c_read(struct device *dev, uintptr_t addr,
 {
 	struct device_i2c	*i2c = &dev->i2c;
 	union uinttype		e_addr;
-	union uinttype		tmp;
+	reg_t			tmp;
 	int			rc;
 
 	struct i2c_msg			msg[] = {
