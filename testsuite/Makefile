@@ -85,6 +85,8 @@ _decode_prog = ${_decode_prog_raw} --type emu --definitions $(filter %.bin,$^)
 	! ${_decode_prog} @no-match   2>/dev/null
 	${_decode_prog}   @Test-0 IRQ\* ${TEST_OUTPUT}
 	! ${_decode_prog} @Test-0 no-match 2>/dev/null
+	${_decode_prog}   @Test-0 no-match IRQ\* ${TEST_OUTPUT}
+	${_decode_prog}   @Test-0 IRQ\* no-match ${TEST_OUTPUT}
 
 ..run-test-deserialize:	test-deserialize FORCE
 	env -u TEST_HEAP_ALLOC ${CHECKER} $(abspath $<) ${TEST_OUTPUT}
