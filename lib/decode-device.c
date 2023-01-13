@@ -137,7 +137,8 @@ struct ctx {
 	intptr_t			offset;
 
 	char const			*unit_glob;
-	char const			*reg_glob;
+	char const * const		*reg_glob;
+	size_t				num_reg_glob;
 };
 
 union uinttype {
@@ -658,7 +659,7 @@ out:
 static bool reg_match(struct cpu_register const *reg, struct ctx *ctx)
 {
 	char const		*name;
-	bool			rc;
+	bool			rc = false;
 
 	if (!ctx->reg_glob)
 		return true;
@@ -667,7 +668,9 @@ static bool reg_match(struct cpu_register const *reg, struct ctx *ctx)
 	if (!name)
 		abort();
 
-	rc = fnmatch(ctx->reg_glob, name, FNM_CASEFOLD) == 0;
+	for (size_t i = 0; i < ctx->num_reg_glob && !rc; ++i)
+		rc = fnmatch(ctx->reg_glob[i], name, FNM_CASEFOLD) == 0;
+
 	free((void *)name);
 
 	return rc;
@@ -888,7 +891,9 @@ int main(int argc, char *argv[])
 		uintmax_t	tmp;
 
 		if (ctx.unit_glob) {
-			ctx.reg_glob = addr;
+			char **argv_addr = &argv[optind + 1];
+			ctx.reg_glob = (char const * const *)argv_addr;
+			ctx.num_reg_glob = argc - optind - 1;
 		} else if (!parse_uint(&tmp, addr)) {
 			fprintf(stderr, "invalid end address '%s'\n", addr);
 			return EX_USAGE;
