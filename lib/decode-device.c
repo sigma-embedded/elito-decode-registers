@@ -673,8 +673,18 @@ static bool reg_match(struct cpu_register const *reg, struct ctx *ctx)
 	if (!name)
 		abort();
 
-	for (size_t i = 0; i < ctx->num_reg_glob && !rc; ++i)
-		rc = fnmatch(ctx->reg_glob[i], name, FNM_CASEFOLD) == 0;
+	for (size_t i = 0; i < ctx->num_reg_glob; ++i) {
+		char const	*glob = ctx->reg_glob[i];
+		bool		is_neg = glob[0] == '!' || glob[0] == '~';
+
+		if (is_neg)
+			++glob;
+
+		if (fnmatch(glob, name, FNM_CASEFOLD) == 0) {
+			rc = !is_neg;
+			break;
+		}
+	}
 
 	free((void *)name);
 
