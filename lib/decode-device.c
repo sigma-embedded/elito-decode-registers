@@ -34,7 +34,7 @@
 #define CMD_NOPAGER             0x1003
 
 static char const			CMDLINE_SHORT[] = \
-	"CT:D:A:v:d:";
+	"CZT:D:A:v:d:";
 
 static struct option const		CMDLINE_OPTIONS[] = {
 	{ "help",         no_argument,       0, CMD_HELP },
@@ -45,6 +45,7 @@ static struct option const		CMDLINE_OPTIONS[] = {
 	{ "value",        required_argument, 0, 'v' },
 	{ "definitions",  required_argument, 0, 'd' },
 	{ "offset",	  required_argument, 0, 'O' },
+	{ "ignore-zero",  no_argument,       0, 'Z' },
 	{ "color",        no_argument,       0, 'C' },
 	{ "no-color",     no_argument,       0, CMD_NOCOLOR },
 	{ "no-pager",	  no_argument,       0, CMD_NOPAGER },
@@ -58,7 +59,7 @@ static void show_help(void)
 	       "    --type|-T <type> --definitions|-d <file>\n"
 	       "    [--bus-device|-D <device>] [--bus-addr|-A <addr>]\n"
 	       "    [--value|-v <value>] [--color|-C] [--no-color]\n"
-	       "    [--offset|-O <value>]\n"
+	       "    [--offset|-O <value>] [--ignore-zero|-Z]\n"
 	       "\n"
 	       "Required options:\n"
 	       "    - I2C: --bus-device (e.g. '/dev/i2c-2'), --bus-addr,\n"
@@ -139,6 +140,7 @@ struct ctx {
 	char const			*unit_glob;
 	char const * const		*reg_glob;
 	size_t				num_reg_glob;
+	bool				ignore_zero;
 };
 
 union uinttype {
@@ -726,6 +728,9 @@ static int _decode_reg(struct cpu_register const *reg, void *ctx_)
 	if (rc < 0)
 		return rc;
 
+	if (ctx->ignore_zero && reg_is_zero(&val, reg->width))
+		return 0;
+
 	/* TODO: fix  printing of large bitfields */
 	col_printf("\n&@0x%08lx&# &N%-28" STR_FMT "&#\t&~%s&#",
 		   addr, STR_ARG(&reg->name),
@@ -860,6 +865,10 @@ int main(int argc, char *argv[])
 
 		case 'C':
 			col_init(1);
+			break;
+
+		case 'Z':
+			ctx.ignore_zero = true;
 			break;
 
 		case CMD_NOCOLOR:
