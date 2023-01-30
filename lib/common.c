@@ -368,3 +368,14 @@ char const *deserialze_print_reg_t(void *dst, size_t len, reg_t const *reg,
 
 	return dst;
 }
+
+bool reg_is_zero(reg_t const *reg, size_t width)
+{
+	for (size_t i = 0; i < width; i += 8) {
+		/* TODO: handle 'width % 8 != 0' case! */
+		if (reg->raw[i / 8] != 0)
+			return false;
+	}
+
+	return true;
+}

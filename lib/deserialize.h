@@ -140,6 +140,8 @@ struct cpu_regfield_int {
 	bool				is_signed;
 };
 
+extern bool reg_is_zero(reg_t const *reg, size_t width);
+
 extern void *deserialize_alloc(size_t len);
 extern void deserialize_dump_bool(struct cpu_regfield_bool const *fld,
 				  bool v, void *priv);
