@@ -1,4 +1,5 @@
 @register ID
+  @description "The ID register"
   @addr 0x00
   @field id
     @uint 7-3
