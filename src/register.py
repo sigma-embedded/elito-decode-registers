@@ -689,6 +689,7 @@ class Register(block.Block, block.Mergeable):
             ARG_RANGES = {
                 '@field' : 1,
                 '@template' : 0,
+                '@description' : 1,
                 '@addr' : [1, 2],
                 "@pin" : 1,
 
@@ -727,6 +728,9 @@ class Register(block.Block, block.Mergeable):
                     raise Exception("Invalid address '%s'" % l)
             elif tag == "@pin":
                 self.o._set_pins(l[1])
+            elif tag == '@description':
+                # TODO: implement '@description'
+                pass
             elif tag in ['@ro', '@read-only']:
                 self.o._set_flags(Register.ACCESS_READ, Register.ACCESS_msk)
             elif tag in ['@rw', '@read-write']:
